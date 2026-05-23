@@ -1,0 +1,42 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# Node.js / npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp
+.pnp.js
+
+# Build output
+dist/
+build/
+.vite/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Go build artifacts
+*.exe
+*.test
+*.out
+
+# Misc
+.cache/
+.parcel-cache/
