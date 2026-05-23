@@ -1,0 +1,17 @@
+# ─── Go backend ──────────────────────────────────────────────────────────────
+# These files are for the Kubernetes sidecar container, NOT for Vercel.
+# Excluding them prevents Vercel from detecting a Go project and trying to build it.
+main.go
+go.mod
+go.sum
+
+# ─── Docker / K8s manifests ───────────────────────────────────────────────────
+Dockerfile
+demo-reset.sh
+pod.yaml
+prometheus.yml
+
+# ─── Misc ─────────────────────────────────────────────────────────────────────
+*.sh
+*.yaml
+*.yml

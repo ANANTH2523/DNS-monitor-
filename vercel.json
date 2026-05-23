@@ -1,4 +1,6 @@
 {
+  "framework": null,
+  "installCommand": "echo 'Skipping root install — frontend-only deployment'",
   "buildCommand": "cd landing && npm install && npm run build",
   "outputDirectory": "landing/dist",
   "rewrites": [
