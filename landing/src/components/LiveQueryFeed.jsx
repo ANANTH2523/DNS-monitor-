@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Search, Layers, Filter, Download, Terminal, Tag } from 'lucide-react';
 
 export default function LiveQueryFeed({ logs, loading = false }) {

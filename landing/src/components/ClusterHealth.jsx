@@ -1,4 +1,3 @@
-import React from 'react';
 import { Server, AlertTriangle, XCircle, CheckCircle2, Activity } from 'lucide-react';
 
 const STATUS_CONFIG = {

@@ -17,12 +17,12 @@ const _statusCbs   = new Set();
 // ── Internal pub/sub ──────────────────────────────────────────────────────────
 function _emit(type, payload) {
   (_listeners.get(type) || new Set()).forEach(fn => {
-    try { fn(payload); } catch {}
+    try { fn(payload); } catch (e) { console.error(e); }
   });
 }
 
 function _notifyStatus(status) {
-  _statusCbs.forEach(fn => { try { fn(status); } catch {} });
+  _statusCbs.forEach(fn => { try { fn(status); } catch (e) { console.error(e); } });
 }
 
 // ── Public: subscribe to a message type ───────────────────────────────────────
@@ -76,7 +76,7 @@ function _doConnect() {
     try {
       const msg = JSON.parse(evt.data);
       _emit(msg.type, msg.payload);
-    } catch {}
+    } catch (e) { console.error(e); }
   };
 
   _ws.onerror = () => {

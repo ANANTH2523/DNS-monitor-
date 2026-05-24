@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import { ThemeContext } from '../App';
 import { motion, useInView } from 'framer-motion';
 import {

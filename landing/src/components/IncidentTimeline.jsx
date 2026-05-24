@@ -1,4 +1,3 @@
-import React from 'react';
 import { AlertCircle, Calendar, Download, RefreshCw } from 'lucide-react';
 
 export default function IncidentTimeline({ incidents, onExportJSON, loading = false }) {

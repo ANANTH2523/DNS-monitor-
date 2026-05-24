@@ -1,4 +1,3 @@
-import React from 'react';
 
 // Record type → ring color
 const TYPE_COLORS = {

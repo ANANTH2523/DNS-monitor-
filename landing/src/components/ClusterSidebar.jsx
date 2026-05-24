@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Server, Plus, LogOut, ChevronRight, Check, X } from 'lucide-react';
 

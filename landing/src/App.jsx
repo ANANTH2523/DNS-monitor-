@@ -6,7 +6,6 @@ import PitchPage              from './components/PitchPage';
 import ClusterSidebar         from './components/ClusterSidebar';
 import ObservabilityDashboard from './components/ObservabilityDashboard';
 import { api, tokenStore, checkBackend } from './services/apiService';
-import { Sun, Moon } from 'lucide-react';
 
 // ─── Theme Context ────────────────────────────────────────────────────────────
 export const ThemeContext = React.createContext({
@@ -52,7 +51,9 @@ export default function App() {
   // ── Try to restore session from localStorage ───────────────────────────────
   useEffect(() => {
     const token = tokenStore.get();
-    if (!token) { setView('pitch'); return; }
+    if (!token) { 
+      setView('pitch'); return; 
+    }
 
     api.auth.me()
       .then(data => {

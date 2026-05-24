@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Activity, Layers, Server, Lock, Eye, EyeOff, AlertTriangle, CheckCircle } from 'lucide-react';
 import { api, tokenStore, checkBackend } from '../services/apiService';
@@ -24,6 +24,7 @@ export default function AuthPage({ backendAvailable, onAuth, onGoToPitch }) {
     if (backendAvailable === null) {
       checkBackend().then(ok => setBackendOk(ok));
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setBackendOk(backendAvailable);
     }
   }, [backendAvailable]);

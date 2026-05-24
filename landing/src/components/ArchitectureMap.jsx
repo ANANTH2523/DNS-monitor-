@@ -1,4 +1,3 @@
-import React from 'react';
 import { Cpu, Radio, Shield, Database, Sliders } from 'lucide-react';
 
 export default function ArchitectureMap() {

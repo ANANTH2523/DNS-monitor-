@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertOctagon, Flame, AlertTriangle, Info, RefreshCw, Terminal, CheckCircle2 } from 'lucide-react';
 

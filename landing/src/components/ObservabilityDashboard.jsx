@@ -1,10 +1,12 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield, Clock, Activity, AlertTriangle, Terminal, BarChart3,
   RefreshCw, Lock, Download, AlertOctagon, Info, Wifi, WifiOff,
-  Server, Zap, Database
+  Server, Database, Sun, Moon
 } from 'lucide-react';
+
+import { ThemeContext } from '../App';
 
 import { useTelemetry }      from '../services/telemetryService';
 import LightweightIntro      from './LightweightIntro';
@@ -28,15 +30,11 @@ const TABS = [
 
 export default function ObservabilityDashboard({
   clusterId     = null,
-  clusterName   = 'Demo Cluster',
-  clusterProfile= 'production',
-  orgName       = 'Demo Org',
   token         = null,
-  isDemoMode    = true,
-  backendOk     = false,
-  onGoToAuth    = null,
+  onGoToPitch   = null,
 }) {
   const [showIntro,         setShowIntro]         = useState(true);
+  const { theme, toggleTheme } = useContext(ThemeContext);
   const [activeTab,         setActiveTab]         = useState('overview');
   const [isRefreshing,      setIsRefreshing]      = useState(false);
   const [selectedTimeRange, setSelectedTimeRange] = useState('5m');
@@ -45,7 +43,6 @@ export default function ObservabilityDashboard({
   // Telemetry hook — real WebSocket when clusterId+token are provided
   const {
     connectionStatus,
-    isRealMode,
     totalQueries,
     failures,
     healthScore,
@@ -62,7 +59,6 @@ export default function ObservabilityDashboard({
     rcodeData,
     heatmapData,
     floatingAlerts,
-    setIncidents,
     setThreats,
     recordTypeStats,
     forceDisconnect,
@@ -71,12 +67,13 @@ export default function ObservabilityDashboard({
   } = useTelemetry(clusterId, token);
 
   // Compatibility shim: build metrics object from flat values
-  const metrics = { totalQueries, failures, healthScore, latencyPercentiles, throughput, cacheHitRate, threatScore, failureRate };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const metrics = useMemo(() => ({ totalQueries, failures, healthScore, latencyPercentiles, throughput, cacheHitRate, threatScore, failureRate }), [totalQueries, failures, healthScore, latencyPercentiles, throughput, cacheHitRate, threatScore, failureRate]);
 
   // Shim helpers that old code used
-  const setHealthScore   = () => {};
-  const triggerFloatingAlert = () => {};
-  const setFloatingAlerts    = () => {};
+  const setHealthScore   = useCallback(() => {}, []);
+  const triggerFloatingAlert = useCallback(() => {}, []);
+  const setFloatingAlerts    = useCallback(() => {}, []);
 
   // Mitigation states
   const [remediatingThreatId, setRemediatingThreatId] = useState(null);
@@ -614,7 +611,7 @@ export default function ObservabilityDashboard({
       {/* ── FLOATING TOAST ALERTS ────────────────────────────────────────────── */}
       <div className="fixed bottom-6 right-4 sm:right-6 z-50 flex flex-col gap-3 max-w-sm pointer-events-none">
         <AnimatePresence>
-          {floatingAlerts.map(alert => (
+          {(floatingAlerts || []).map(alert => (
             <motion.div
               key={alert.id}
               initial={{ opacity: 0, y: 30, scale: 0.95 }}

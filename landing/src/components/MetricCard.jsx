@@ -1,4 +1,3 @@
-import React from 'react';
 
 export default function MetricCard({ title, value, unit = '', desc, icon: Icon, isError = false, loading = false }) {
   return (

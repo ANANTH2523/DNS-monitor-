@@ -41,14 +41,14 @@ export function useTelemetry(clusterId = null, token = null) {
   const [latencyPercentiles, setLatencyPercentiles] = useState({ p50: 8, p95: 14, p99: 22 });
   const [throughput,         setThroughput]         = useState(2.1);
   const [cacheHitRate,       setCacheHitRate]       = useState(84.2);
-  const [threatScore,        setThreatScore]        = useState(5);
+  const [threatScore]                               = useState(5);
   const [failureRate,        setFailureRate]        = useState(0);
 
   // ── Data streams ──────────────────────────────────────────────────────────
   const [logs,       setLogs]       = useState(SEED_LOGS);
   const [incidents,  setIncidents]  = useState(SEED_INCIDENTS);
   const [threats,    setThreats]    = useState(SEED_THREATS);
-  const [pods,       setPods]       = useState(SEED_PODS);
+  const [pods]                      = useState(SEED_PODS);
 
   // ── Chart histories ───────────────────────────────────────────────────────
   const [latencyHistory, setLatencyHistory] = useState(
@@ -58,7 +58,7 @@ export function useTelemetry(clusterId = null, token = null) {
     () => Array.from({ length: 30 }, () => parseFloat((1.2 + Math.random() * 1.8).toFixed(1)))
   );
   const [rcodeData, setRcodeData] = useState({ NXDOMAIN: 12, SERVFAIL: 4, REFUSED: 1 });
-  const [recordTypeStats, setRecordTypeStats] = useState({ A: 1420, AAAA: 310, TXT: 85, MX: 42, CNAME: 120 });
+  const [recordTypeStats] = useState({ A: 1420, AAAA: 310, TXT: 85, MX: 42, CNAME: 120 });
   const [heatmapData]             = useState(generateHeatmapData);
   const [floatingAlerts, setFloatingAlerts] = useState([]);
 
@@ -145,11 +145,6 @@ export function useTelemetry(clusterId = null, token = null) {
   // ── DEMO MODE: local simulation ───────────────────────────────────────────
   useEffect(() => {
     if (isRealMode) return;
-
-    setConnectionStatus('demo');
-    setHealthScore(99.5);
-    setThroughput(2.1);
-    setCacheHitRate(84.2);
 
     const int1 = setInterval(() => {
       const isErr = Math.random() < 0.05;
