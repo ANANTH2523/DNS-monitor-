@@ -8,6 +8,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -39,6 +40,15 @@ var (
 	// Keep track of request timestamps to calculate latency
 	queryTimes = make(map[uint16]time.Time)
 )
+
+func getEnv(key, fallback string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return fallback
+	}
+	return value
+}
+
 
 func init() {
 	prometheus.MustRegister(dnsQueriesTotal)
@@ -127,13 +137,20 @@ func main() {
 
 	// Start Prometheus metrics endpoint
 	go func() {
+		
+		port := getEnv("PROMETHEUS_PORT", "2112")
+
 		http.Handle("/metrics", promhttp.Handler())
-		log.Println("Prometheus metrics server listening on :2112")
-		if err := http.ListenAndServe(":2112", nil); err != nil {
+		
+		log.Println("Prometheus metrics server listening on :",port)
+		
+		if err := http.ListenAndServe(":"+port, nil); err != nil {
 			log.Fatalf("Error starting Prometheus metrics server: %v", err)
 		}
 	}()
+	iface := getEnv("NETWORK_INTERFACE", "eth0")
 
+	// Open the shared network interface
 	if *mockFlag {
 		if *agentToken == "" {
 			log.Println("WARNING: No --token provided. Traffic will likely be rejected by backend.")
@@ -143,13 +160,16 @@ func main() {
 	}
 
 	// Real PCAP Mode
-	handle, err := pcap.OpenLive("eth0", 1600, true, pcap.BlockForever)
+	handle, err := pcap.OpenLive(iface, 1600, true, pcap.BlockForever)
 	if err != nil {
 		log.Fatalf("Error opening device eth0: %v. Try running with sudo or use --mock", err)
 	}
 	defer handle.Close()
 
-	err = handle.SetBPFFilter("udp and port 53")
+	// Filter only DNS traffic
+	dnsPort := getEnv("DNS_PORT", "53")
+
+	err = handle.SetBPFFilter(fmt.Sprintf("udp and port %s", dnsPort))
 	if err != nil {
 		log.Fatal(err)
 	}

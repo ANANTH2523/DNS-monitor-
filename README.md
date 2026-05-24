@@ -37,6 +37,16 @@ graph TD
 
 ---
 
+## Configs
+
+The following variables are able to be changed by setting them in the enviortment
+
+| Environment Key    | Default Value | Description                                         |
+|-------------------|---------------|-----------------------------------------------------|
+| PROMETHEUS_PORT   | 2112          | The port that the /metrics endpoint will be on      |
+| DNS_PORT          | 53            | The port the sidecar will listen to for dns traffic |
+| NETWORK_INTERFACE | eth0          | The network interface that will be listening on     |
+
 ## 🚀 Telemetry Features
 
 ### 1. Prometheus Telemetry Scrape
