@@ -64,7 +64,7 @@ export default function DevicePanel({ sessionId, apiLatency, browserDnsLatency, 
                  : info.networkType.toUpperCase();
 
   return (
-    <div className="bg-[#0c101b] border border-[#1e293b] rounded-lg p-5 shadow-sm space-y-5">
+    <div className="bg-white dark:bg-[#0c101b] border border-slate-200 dark:border-[#1e293b] rounded-lg p-5 shadow-sm space-y-5">
 
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -73,7 +73,7 @@ export default function DevicePanel({ sessionId, apiLatency, browserDnsLatency, 
             <DeviceIcon className="w-3.5 h-3.5 text-blue-500" />
             Device & Session Context
           </span>
-          <h3 className="text-xs font-bold text-slate-200 mt-0.5">This Device — Live Monitoring Session</h3>
+          <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">This Device — Live Monitoring Session</h3>
         </div>
         {/* API connection status */}
         <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[9px] font-mono font-bold uppercase ${
@@ -100,55 +100,55 @@ export default function DevicePanel({ sessionId, apiLatency, browserDnsLatency, 
         </div>
 
         {/* Device */}
-        <div className="p-3 bg-[#080b11] border border-[#1e293b] rounded-lg">
+        <div className="p-3 bg-slate-50 dark:bg-[#080b11] border border-slate-200 dark:border-[#1e293b] rounded-lg">
           <p className="text-[8px] text-slate-500 uppercase tracking-wider mb-1.5">Device</p>
           <div className="flex items-center gap-1.5">
             <DeviceIcon className="w-3 h-3 text-blue-400" />
-            <span className="text-slate-200 font-bold">{info.deviceType}</span>
+            <span className="text-slate-800 dark:text-slate-200 font-bold">{info.deviceType}</span>
           </div>
         </div>
 
         {/* OS */}
-        <div className="p-3 bg-[#080b11] border border-[#1e293b] rounded-lg">
+        <div className="p-3 bg-slate-50 dark:bg-[#080b11] border border-slate-200 dark:border-[#1e293b] rounded-lg">
           <p className="text-[8px] text-slate-500 uppercase tracking-wider mb-1.5">Operating System</p>
-          <span className="text-slate-200 font-bold">{info.os}</span>
+          <span className="text-slate-800 dark:text-slate-200 font-bold">{info.os}</span>
         </div>
 
         {/* Browser */}
-        <div className="p-3 bg-[#080b11] border border-[#1e293b] rounded-lg">
+        <div className="p-3 bg-slate-50 dark:bg-[#080b11] border border-slate-200 dark:border-[#1e293b] rounded-lg">
           <p className="text-[8px] text-slate-500 uppercase tracking-wider mb-1.5">Browser</p>
-          <span className="text-slate-200 font-bold">{info.browser}</span>
+          <span className="text-slate-800 dark:text-slate-200 font-bold">{info.browser}</span>
         </div>
 
         {/* Network type */}
-        <div className="p-3 bg-[#080b11] border border-[#1e293b] rounded-lg">
+        <div className="p-3 bg-slate-50 dark:bg-[#080b11] border border-slate-200 dark:border-[#1e293b] rounded-lg">
           <p className="text-[8px] text-slate-500 uppercase tracking-wider mb-1.5">
             <Wifi className="w-2.5 h-2.5 inline mr-1" />Network Type
           </p>
-          <span className="text-slate-200 font-bold">{netLabel}</span>
+          <span className="text-slate-800 dark:text-slate-200 font-bold">{netLabel}</span>
         </div>
 
         {/* RTT */}
-        <div className="p-3 bg-[#080b11] border border-[#1e293b] rounded-lg">
+        <div className="p-3 bg-slate-50 dark:bg-[#080b11] border border-slate-200 dark:border-[#1e293b] rounded-lg">
           <p className="text-[8px] text-slate-500 uppercase tracking-wider mb-1.5">
             <Signal className="w-2.5 h-2.5 inline mr-1" />Network RTT
           </p>
-          <span className="text-slate-200 font-bold">
+          <span className="text-slate-800 dark:text-slate-200 font-bold">
             {info.rtt !== null ? `${info.rtt}ms` : '—'}
           </span>
         </div>
 
         {/* Downlink */}
-        <div className="p-3 bg-[#080b11] border border-[#1e293b] rounded-lg">
+        <div className="p-3 bg-slate-50 dark:bg-[#080b11] border border-slate-200 dark:border-[#1e293b] rounded-lg">
           <p className="text-[8px] text-slate-500 uppercase tracking-wider mb-1.5">Downlink</p>
-          <span className="text-slate-200 font-bold">
+          <span className="text-slate-800 dark:text-slate-200 font-bold">
             {info.downlink !== null ? `${info.downlink} Mbps` : '—'}
           </span>
         </div>
       </div>
 
       {/* Real timing measurements */}
-      <div className="border-t border-[#1e293b]/40 pt-4 space-y-3">
+      <div className="border-t border-slate-200 dark:border-[#1e293b]/40 pt-4 space-y-3">
         <p className="text-[9px] font-mono uppercase text-slate-500 tracking-wider font-bold">
           Real Performance Measurements — This Device
         </p>
@@ -156,7 +156,7 @@ export default function DevicePanel({ sessionId, apiLatency, browserDnsLatency, 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
 
           {/* API round-trip latency */}
-          <div className="p-3 rounded-lg border border-[#1e293b] bg-[#080b11] space-y-1">
+          <div className="p-3 rounded-lg border border-slate-200 dark:border-[#1e293b] bg-slate-50 dark:bg-[#080b11] space-y-1">
             <p className="text-[8px] text-slate-500 uppercase tracking-wider">
               <Zap className="w-2.5 h-2.5 inline mr-1" />API Round-Trip
             </p>
@@ -176,7 +176,7 @@ export default function DevicePanel({ sessionId, apiLatency, browserDnsLatency, 
           </div>
 
           {/* Browser-side DNS timing */}
-          <div className="p-3 rounded-lg border border-[#1e293b] bg-[#080b11] space-y-1">
+          <div className="p-3 rounded-lg border border-slate-200 dark:border-[#1e293b] bg-slate-50 dark:bg-[#080b11] space-y-1">
             <p className="text-[8px] text-slate-500 uppercase tracking-wider">
               <Globe className="w-2.5 h-2.5 inline mr-1" />Browser DNS Timing
             </p>
@@ -194,7 +194,7 @@ export default function DevicePanel({ sessionId, apiLatency, browserDnsLatency, 
           </div>
 
           {/* Network quality */}
-          <div className="p-3 rounded-lg border border-[#1e293b] bg-[#080b11] space-y-1">
+          <div className="p-3 rounded-lg border border-slate-200 dark:border-[#1e293b] bg-slate-50 dark:bg-[#080b11] space-y-1">
             <p className="text-[8px] text-slate-500 uppercase tracking-wider">Network Quality</p>
             <p className={`text-xl font-black font-mono ${quality.color}`}>
               {quality.label}
@@ -207,17 +207,17 @@ export default function DevicePanel({ sessionId, apiLatency, browserDnsLatency, 
       </div>
 
       {/* Session stats */}
-      <div className="border-t border-[#1e293b]/40 pt-4">
+      <div className="border-t border-slate-200 dark:border-[#1e293b]/40 pt-4">
         <p className="text-[9px] font-mono uppercase text-slate-500 tracking-wider font-bold mb-3">
           Session Statistics — Accumulated This Session Only
         </p>
-        <div className="flex flex-wrap gap-4 text-[10px] font-mono text-slate-400">
+        <div className="flex flex-wrap gap-4 text-[10px] font-mono text-slate-600 dark:text-slate-400">
           <span>
             <Database className="w-3 h-3 inline text-blue-500 mr-1" />
-            Real DNS probes: <span className="text-white font-bold">{realQueryCount}</span>
+            Real DNS probes: <span className="text-slate-900 dark:text-white font-bold">{realQueryCount}</span>
           </span>
           <span>
-            Session started: <span className="text-slate-300 font-bold">{
+            Session started: <span className="text-slate-700 dark:text-slate-300 font-bold">{
               (() => {
                 const ts = sessionStorage.getItem('dns-sentinel-start');
                 if (!ts) return '—';

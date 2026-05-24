@@ -10,7 +10,7 @@ const FEATURES = [
   { icon: Server,   title: 'Kubernetes Native',        desc: 'Sidecar pattern — works with any cluster.' },
 ];
 
-export default function AuthPage({ backendAvailable, onAuth }) {
+export default function AuthPage({ backendAvailable, onAuth, onGoToPitch }) {
   const [mode,        setMode]        = useState('login');   // 'login' | 'register'
   const [email,       setEmail]       = useState('');
   const [password,    setPassword]    = useState('');
@@ -55,26 +55,26 @@ export default function AuthPage({ backendAvailable, onAuth }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#080b11] flex items-stretch">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#080b11] flex items-stretch">
 
       {/* ── Left: Brand panel ─────────────────────────────────────────────── */}
-      <div className="hidden lg:flex flex-col justify-between w-[420px] flex-shrink-0 bg-[#090c13] border-r border-[#1e293b] p-10">
+      <div className="hidden lg:flex flex-col justify-between w-[420px] flex-shrink-0 bg-slate-50 dark:bg-[#090c13] border-r border-slate-200 dark:border-[#1e293b] p-10">
         <div>
           {/* Logo */}
-          <div className="flex items-center gap-2.5 mb-12">
+          <div className="flex items-center gap-2.5 mb-12 cursor-pointer hover:opacity-80 transition-opacity" onClick={onGoToPitch}>
             <div className="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.15)]">
               <Shield className="w-5 h-5 text-blue-400" />
             </div>
-            <span className="font-bold text-white font-mono">DNS Sentinel</span>
+            <span className="font-bold text-slate-900 dark:text-white font-mono">DNS Sentinel</span>
           </div>
 
-          <h2 className="text-2xl font-black text-white mb-2 leading-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
+          <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2 leading-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
             Real-Time DNS Observability<br />
             <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
               for Kubernetes
             </span>
           </h2>
-          <p className="text-sm text-slate-400 font-light mb-10 leading-relaxed">
+          <p className="text-sm text-slate-600 dark:text-slate-400 font-light mb-10 leading-relaxed">
             Monitor every DNS query across your clusters. Detect anomalies. Get alerted on failures. All in real-time.
           </p>
 
@@ -91,7 +91,7 @@ export default function AuthPage({ backendAvailable, onAuth }) {
                   <Icon className="w-3.5 h-3.5 text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-200">{title}</p>
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{title}</p>
                   <p className="text-[10px] text-slate-500 font-light">{desc}</p>
                 </div>
               </motion.div>
@@ -121,30 +121,30 @@ export default function AuthPage({ backendAvailable, onAuth }) {
           className="w-full max-w-sm"
         >
           {/* Mobile logo */}
-          <div className="flex lg:hidden items-center gap-2 mb-8">
+          <div className="flex lg:hidden items-center gap-2 mb-8 cursor-pointer hover:opacity-80 transition-opacity" onClick={onGoToPitch}>
             <Shield className="w-5 h-5 text-blue-400" />
-            <span className="font-bold text-white font-mono text-sm">DNS Sentinel</span>
+            <span className="font-bold text-slate-900 dark:text-white font-mono text-sm">DNS Sentinel</span>
           </div>
 
-          <h1 className="text-xl font-black text-white mb-1" style={{ fontFamily: "'Outfit', sans-serif" }}>
+          <h1 className="text-xl font-black text-slate-900 dark:text-white mb-1" style={{ fontFamily: "'Outfit', sans-serif" }}>
             {mode === 'login' ? 'Welcome back' : 'Create your account'}
           </h1>
-          <p className="text-xs text-slate-400 mb-6 font-light">
+          <p className="text-xs text-slate-600 dark:text-slate-400 mb-6 font-light">
             {mode === 'login'
               ? 'Sign in to access your clusters and telemetry.'
               : 'Start monitoring DNS in under 2 minutes.'}
           </p>
 
           {/* Mode toggle */}
-          <div className="flex gap-1 p-1 bg-[#0c101b] border border-[#1e293b] rounded-lg mb-5">
+          <div className="flex gap-1 p-1 bg-white dark:bg-[#0c101b] border border-slate-200 dark:border-[#1e293b] rounded-lg mb-5">
             {['login', 'register'].map(m => (
               <button
                 key={m}
                 onClick={() => { setMode(m); setError(''); }}
                 className={`flex-1 py-1.5 rounded-md text-[11px] font-bold font-mono uppercase tracking-wider transition-all ${
                   mode === m
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-blue-600 text-slate-900 dark:text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200'
                 }`}
               >
                 {m}
@@ -155,7 +155,7 @@ export default function AuthPage({ backendAvailable, onAuth }) {
           <form onSubmit={handleSubmit} className="space-y-3">
             {mode === 'register' && (
               <div>
-                <label className="text-[10px] text-slate-400 font-mono uppercase tracking-wider mb-1 block">
+                <label className="text-[10px] text-slate-600 dark:text-slate-400 font-mono uppercase tracking-wider mb-1 block">
                   Organisation Name
                 </label>
                 <input
@@ -164,25 +164,25 @@ export default function AuthPage({ backendAvailable, onAuth }) {
                   onChange={e => setOrgName(e.target.value)}
                   placeholder="Acme Corp"
                   required
-                  className="w-full bg-[#0c101b] border border-[#1e293b] rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20 transition-colors font-mono"
+                  className="w-full bg-white dark:bg-[#0c101b] border border-slate-200 dark:border-[#1e293b] rounded-lg px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20 transition-colors font-mono"
                 />
               </div>
             )}
 
             <div>
-              <label className="text-[10px] text-slate-400 font-mono uppercase tracking-wider mb-1 block">Email</label>
+              <label className="text-[10px] text-slate-600 dark:text-slate-400 font-mono uppercase tracking-wider mb-1 block">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="you@company.com"
                 required
-                className="w-full bg-[#0c101b] border border-[#1e293b] rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20 transition-colors font-mono"
+                className="w-full bg-white dark:bg-[#0c101b] border border-slate-200 dark:border-[#1e293b] rounded-lg px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20 transition-colors font-mono"
               />
             </div>
 
             <div>
-              <label className="text-[10px] text-slate-400 font-mono uppercase tracking-wider mb-1 block">Password</label>
+              <label className="text-[10px] text-slate-600 dark:text-slate-400 font-mono uppercase tracking-wider mb-1 block">Password</label>
               <div className="relative">
                 <input
                   type={showPass ? 'text' : 'password'}
@@ -191,12 +191,12 @@ export default function AuthPage({ backendAvailable, onAuth }) {
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="w-full bg-[#0c101b] border border-[#1e293b] rounded-lg px-3 py-2.5 pr-10 text-sm text-white placeholder-slate-600 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20 transition-colors font-mono"
+                  className="w-full bg-white dark:bg-[#0c101b] border border-slate-200 dark:border-[#1e293b] rounded-lg px-3 py-2.5 pr-10 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20 transition-colors font-mono"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 dark:text-slate-300"
                 >
                   {showPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                 </button>
@@ -213,7 +213,7 @@ export default function AuthPage({ backendAvailable, onAuth }) {
             <button
               type="submit"
               disabled={loading || !backendOk}
-              className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-sm rounded-lg transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)]"
+              className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-slate-900 dark:text-white font-bold text-sm rounded-lg transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)]"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -236,7 +236,7 @@ export default function AuthPage({ backendAvailable, onAuth }) {
           {/* Demo mode */}
           <button
             onClick={handleDemoMode}
-            className="w-full py-2.5 border border-[#1e293b] hover:border-[#334155] text-slate-300 hover:text-white font-medium text-sm rounded-lg transition-all"
+            className="w-full py-2.5 border border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:border-[#334155] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white font-medium text-sm rounded-lg transition-all"
           >
             <span className="flex items-center justify-center gap-2">
               <Activity className="w-3.5 h-3.5" />

@@ -32,7 +32,7 @@ export default function LightweightIntro({ onComplete }) {
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="w-16 h-16 rounded-xl bg-[#0f1422] border border-[#1e293b] flex items-center justify-center shadow-lg relative z-10"
+          className="w-16 h-16 rounded-xl bg-[#0f1422] border border-slate-200 dark:border-[#1e293b] flex items-center justify-center shadow-lg relative z-10"
         >
           <Shield className="w-8 h-8 text-blue-500" />
         </motion.div>
@@ -45,7 +45,7 @@ export default function LightweightIntro({ onComplete }) {
         transition={{ delay: 0.4, duration: 0.8 }}
         className="mt-6 text-center space-y-2 relative z-10"
       >
-        <h1 className="text-lg font-bold tracking-widest text-white uppercase">DNS SENTINEL</h1>
+        <h1 className="text-lg font-bold tracking-widest text-slate-900 dark:text-white uppercase">DNS SENTINEL</h1>
         <p className="text-[9px] text-slate-500 uppercase tracking-widest font-semibold">Kubernetes eBPF Resolving Observer</p>
       </motion.div>
 

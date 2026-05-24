@@ -187,23 +187,26 @@ export default function ObservabilityDashboard({
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div className="relative flex flex-col min-h-screen text-[#e2e8f0] bg-[#080b11] font-sans antialiased overflow-hidden select-none">
+    <div className="relative flex flex-col min-h-screen text-[#e2e8f0] bg-slate-50 dark:bg-[#080b11] font-sans antialiased overflow-hidden select-none">
 
       {/* Background layers */}
       <div className="absolute inset-0 bg-grid-observability opacity-30 pointer-events-none z-0" />
       <div className="absolute top-0 right-0 w-[500px] h-[300px] bg-glow-observability opacity-20 pointer-events-none z-0" />
 
       {/* ── TOP NAV ────────────────────────────────────────────────────────── */}
-      <header className="relative z-10 border-b border-[#1e293b] bg-[#0c101b] shadow-sm">
+      <header className="relative z-10 border-b border-slate-200 dark:border-[#1e293b] bg-white dark:bg-[#0c101b] shadow-sm">
         <div className="flex items-center justify-between px-4 sm:px-6 py-3.5">
 
           {/* Brand */}
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md bg-[#1e293b] border border-[#334155] flex items-center justify-center">
+          <button onClick={toggleTheme} className="p-2 rounded-lg bg-slate-200 dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
+            <div className="w-8 h-8 rounded-md bg-[#1e293b] border border-slate-300 dark:border-[#334155] flex items-center justify-center">
               <Shield className="w-4 h-4 text-blue-500" />
             </div>
             <div>
-              <span className="text-sm font-bold tracking-tight text-white uppercase">DNS Sentinel</span>
+              <span className="text-sm font-bold tracking-tight text-slate-900 dark:text-white uppercase">DNS Sentinel</span>
               <p className="text-[9px] text-slate-500 font-mono tracking-wider font-semibold">eBPF CORE OBSERVABILITY</p>
             </div>
             {/* Connection badge */}
@@ -219,7 +222,7 @@ export default function ObservabilityDashboard({
           </div>
 
           {/* Desktop tab nav */}
-          <nav className="hidden md:flex bg-[#0f1422] border border-[#1e293b] rounded-md p-0.5 font-mono text-[11px] font-bold">
+          <nav className="hidden md:flex bg-[#0f1422] border border-slate-200 dark:border-[#1e293b] rounded-md p-0.5 font-mono text-[11px] font-bold">
             {TABS.map(({ id, label, Icon }) => (
               <button
                 key={id}
@@ -227,7 +230,7 @@ export default function ObservabilityDashboard({
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded transition-all ${
                   activeTab === id
                     ? 'bg-[#182035] text-blue-400 border border-blue-500/10'
-                    : 'text-slate-400 hover:text-slate-200'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200'
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -240,7 +243,7 @@ export default function ObservabilityDashboard({
           <div className="flex items-center gap-2">
             {/* Mobile hamburger */}
             <button
-              className="md:hidden p-1.5 rounded bg-[#0f1422] border border-[#1e293b] text-slate-400"
+              className="md:hidden p-1.5 rounded bg-[#0f1422] border border-slate-200 dark:border-[#1e293b] text-slate-600 dark:text-slate-400"
               onClick={() => setMobileMenuOpen(v => !v)}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -250,7 +253,7 @@ export default function ObservabilityDashboard({
 
             {/* Disconnect / Reconnect */}
             {connectionStatus === 'connected' ? (
-              <button onClick={forceDisconnect} className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-900 border border-slate-800 text-[10px] font-mono text-slate-400 hover:text-rose-400 hover:border-rose-950 transition-colors">
+              <button onClick={forceDisconnect} className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-900 border border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-400 hover:text-rose-400 hover:border-rose-950 transition-colors">
                 <WifiOff className="w-3 h-3" /> Disconnect
               </button>
             ) : (
@@ -260,12 +263,12 @@ export default function ObservabilityDashboard({
             )}
 
             {/* Time range selector */}
-            <div className="hidden sm:flex items-center bg-[#080b11] border border-[#1e293b] rounded px-2.5 py-1 text-slate-400">
+            <div className="hidden sm:flex items-center bg-slate-50 dark:bg-[#080b11] border border-slate-200 dark:border-[#1e293b] rounded px-2.5 py-1 text-slate-600 dark:text-slate-400">
               <Clock className="w-3 h-3 text-slate-500 mr-1.5" />
               <select
                 value={selectedTimeRange}
                 onChange={e => { setSelectedTimeRange(e.target.value); triggerRefresh(); }}
-                className="bg-transparent text-slate-200 font-bold outline-none cursor-pointer text-[10px] font-mono"
+                className="bg-transparent text-slate-800 dark:text-slate-200 font-bold outline-none cursor-pointer text-[10px] font-mono"
               >
                 <option value="5m">Last 5m</option>
                 <option value="15m">Last 15m</option>
@@ -275,7 +278,7 @@ export default function ObservabilityDashboard({
             </div>
 
             {/* Refresh */}
-            <button onClick={triggerRefresh} className="p-1.5 rounded bg-[#080b11] border border-[#1e293b] text-slate-400 hover:text-blue-400 transition-colors">
+            <button onClick={triggerRefresh} className="p-1.5 rounded bg-slate-50 dark:bg-[#080b11] border border-slate-200 dark:border-[#1e293b] text-slate-600 dark:text-slate-400 hover:text-blue-400 transition-colors">
               <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin text-blue-400' : ''}`} />
             </button>
           </div>
@@ -288,7 +291,7 @@ export default function ObservabilityDashboard({
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="md:hidden border-t border-[#1e293b] bg-[#0c101b] px-4 pb-3 overflow-hidden"
+              className="md:hidden border-t border-slate-200 dark:border-[#1e293b] bg-white dark:bg-[#0c101b] px-4 pb-3 overflow-hidden"
             >
               <div className="flex flex-col gap-1 pt-2 font-mono text-[11px] font-bold">
                 {TABS.map(({ id, label, Icon }) => (
@@ -296,7 +299,7 @@ export default function ObservabilityDashboard({
                     key={id}
                     onClick={() => { setActiveTab(id); setMobileMenuOpen(false); }}
                     className={`flex items-center gap-2 px-3 py-2 rounded transition-all text-left ${
-                      activeTab === id ? 'bg-[#182035] text-blue-400' : 'text-slate-400 hover:text-slate-200'
+                      activeTab === id ? 'bg-[#182035] text-blue-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200'
                     }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
@@ -319,7 +322,7 @@ export default function ObservabilityDashboard({
               <WifiOff className="w-6 h-6" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-white font-mono">eBPF Telemetry Outage Detected</h3>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white font-mono">eBPF Telemetry Outage Detected</h3>
               <p className="text-xs text-slate-500 font-light max-w-sm">Lost active BPF socket connection to KIND cluster control-plane.</p>
             </div>
             <button onClick={manualReconnect} className="px-4 py-2 border border-rose-500/30 bg-rose-950/20 hover:bg-rose-950/40 text-rose-400 text-xs font-mono font-bold rounded transition-colors">
@@ -334,16 +337,16 @@ export default function ObservabilityDashboard({
               <motion.div key="overview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="space-y-6">
 
                 {/* Hero banner */}
-                <div className="p-5 rounded-lg bg-[#0c101b] border border-[#1e293b] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+                <div className="p-5 rounded-lg bg-white dark:bg-[#0c101b] border border-slate-200 dark:border-[#1e293b] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
                   <div className="space-y-1.5">
                     <span className="text-[9px] font-mono uppercase tracking-widest text-blue-500 font-bold">Kubernetes Observability Node</span>
-                    <h2 className="text-lg font-bold tracking-tight text-white">BPF DNS Resolving Telemetry</h2>
-                    <p className="text-xs text-slate-400 leading-normal max-w-2xl font-light">
+                    <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">BPF DNS Resolving Telemetry</h2>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-normal max-w-2xl font-light">
                       Intercepting DNS resolve timings on raw sockets at interface <code className="text-blue-400 bg-blue-950/20 px-1 rounded">eth0</code>.
                       Live charts measure p50/p95/p99 timeouts to identify service performance spikes and security indicators.
                     </p>
                   </div>
-                  <button onClick={handleExportReport} className="flex items-center gap-1.5 px-3 py-1.5 border border-[#1e293b] bg-[#080b11] hover:bg-[#1a202c] hover:border-[#334155] text-slate-400 hover:text-white rounded transition-colors text-[9px] font-mono font-bold self-end sm:self-auto">
+                  <button onClick={handleExportReport} className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 dark:border-[#1e293b] bg-slate-50 dark:bg-[#080b11] hover:bg-[#1a202c] hover:border-slate-300 dark:border-[#334155] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white rounded transition-colors text-[9px] font-mono font-bold self-end sm:self-auto">
                     <Download className="w-3 h-3 text-blue-400" /> Download Incident Report
                   </button>
                 </div>
@@ -361,11 +364,11 @@ export default function ObservabilityDashboard({
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                   {/* SVG latency area chart */}
-                  <div className="lg:col-span-2 bg-[#0c101b] border border-[#1e293b] rounded-lg p-5 shadow-sm">
+                  <div className="lg:col-span-2 bg-white dark:bg-[#0c101b] border border-slate-200 dark:border-[#1e293b] rounded-lg p-5 shadow-sm">
                     <div className="flex justify-between items-center mb-5">
                       <div>
                         <span className="text-[9px] font-mono uppercase text-slate-500 tracking-wider">Live Timing Analytics</span>
-                        <h3 className="text-xs font-bold text-slate-200 mt-0.5">p95 Latency Index Timeline</h3>
+                        <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">p95 Latency Index Timeline</h3>
                       </div>
                       <span className="text-[8px] font-mono text-blue-400 bg-blue-950/40 border border-blue-500/20 px-2 py-0.5 rounded font-bold uppercase">Real-Time</span>
                     </div>
@@ -390,7 +393,7 @@ export default function ObservabilityDashboard({
                     </div>
 
                     {/* QPS sparkline bars */}
-                    <div className="mt-4 pt-3 border-t border-[#1e293b]/40">
+                    <div className="mt-4 pt-3 border-t border-slate-200 dark:border-[#1e293b]/40">
                       <span className="text-[8px] font-mono text-slate-600 uppercase tracking-wider">QPS Throughput (30s window)</span>
                       <div className="flex items-end gap-0.5 mt-1.5 h-8">
                         {qpsHistory.map((v, i) => (
@@ -423,7 +426,7 @@ export default function ObservabilityDashboard({
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                   {/* RCODE bars */}
-                  <div className="bg-[#0c101b] border border-[#1e293b] rounded-lg p-5 shadow-sm flex flex-col justify-between">
+                  <div className="bg-white dark:bg-[#0c101b] border border-slate-200 dark:border-[#1e293b] rounded-lg p-5 shadow-sm flex flex-col justify-between">
                     <div>
                       <span className="text-[9px] font-mono uppercase text-slate-500 tracking-wider block mb-4">RCODE Error Breakdown</span>
                       <div className="space-y-4 font-mono text-[10px]">
@@ -433,7 +436,7 @@ export default function ObservabilityDashboard({
                           { label: 'REFUSED (Firewall Block)',   pct: 4.8,  color: 'bg-slate-500', text: 'text-slate-500' },
                         ].map(({ label, pct, color, text }) => (
                           <div key={label} className="space-y-1">
-                            <div className="flex justify-between items-center text-slate-400">
+                            <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
                               <span>{label}</span>
                               <span className={text}>{pct}%</span>
                             </div>
@@ -444,18 +447,18 @@ export default function ObservabilityDashboard({
                         ))}
                       </div>
                     </div>
-                    <div className="border-t border-[#1e293b]/40 pt-3 mt-4 text-[9px] text-slate-500 font-mono">
+                    <div className="border-t border-slate-200 dark:border-[#1e293b]/40 pt-3 mt-4 text-[9px] text-slate-500 font-mono">
                       💡 NXDOMAIN anomalies signify search path redundancy timings.
                     </div>
                   </div>
 
                   {/* Top queried domains */}
-                  <div className="lg:col-span-2 bg-[#0c101b] border border-[#1e293b] rounded-lg p-5 shadow-sm">
+                  <div className="lg:col-span-2 bg-white dark:bg-[#0c101b] border border-slate-200 dark:border-[#1e293b] rounded-lg p-5 shadow-sm">
                     <span className="text-[9px] font-mono uppercase text-slate-500 tracking-wider mb-4 block">Top Resolving Targets</span>
                     <div className="overflow-x-auto">
-                      <table className="w-full text-left font-mono text-[10px] text-slate-300">
+                      <table className="w-full text-left font-mono text-[10px] text-slate-700 dark:text-slate-300">
                         <thead>
-                          <tr className="border-b border-[#1e293b] text-slate-500 font-bold uppercase tracking-wider text-[9px]">
+                          <tr className="border-b border-slate-200 dark:border-[#1e293b] text-slate-500 font-bold uppercase tracking-wider text-[9px]">
                             <th className="pb-3">Domain</th>
                             <th className="pb-3 text-right">Volume</th>
                             <th className="pb-3 text-right">Success</th>
@@ -465,14 +468,14 @@ export default function ObservabilityDashboard({
                         <tbody className="divide-y divide-[#1e293b]/40">
                           {topDomains.map((d, i) => (
                             <tr key={i} className="hover:bg-[#121824]/40 transition-colors">
-                              <td className={`py-3 ${d.error ? 'text-rose-400 font-semibold' : 'text-slate-200 font-medium'}`}>{d.name}</td>
+                              <td className={`py-3 ${d.error ? 'text-rose-400 font-semibold' : 'text-slate-800 dark:text-slate-200 font-medium'}`}>{d.name}</td>
                               <td className="py-3 text-right">{d.count.toLocaleString()}</td>
                               <td className="py-3 text-right">
                                 <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold ${
                                   d.successRate > 95 ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/20' : 'bg-rose-950/40 text-rose-400 border border-rose-500/20'
                                 }`}>{d.successRate}%</span>
                               </td>
-                              <td className="py-3 text-right text-slate-400">{d.latency}</td>
+                              <td className="py-3 text-right text-slate-600 dark:text-slate-400">{d.latency}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -521,11 +524,11 @@ export default function ObservabilityDashboard({
               <motion.div key="infra" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="space-y-6">
 
                 {/* Infra hero */}
-                <div className="p-5 rounded-lg bg-[#0c101b] border border-[#1e293b] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+                <div className="p-5 rounded-lg bg-white dark:bg-[#0c101b] border border-slate-200 dark:border-[#1e293b] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
                   <div className="space-y-1.5">
                     <span className="text-[9px] font-mono uppercase tracking-widest text-blue-500 font-bold">Cluster Node Registry</span>
-                    <h2 className="text-lg font-bold tracking-tight text-white">Kubernetes Infrastructure View</h2>
-                    <p className="text-xs text-slate-400 leading-normal max-w-2xl font-light">
+                    <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Kubernetes Infrastructure View</h2>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-normal max-w-2xl font-light">
                       Live pod health matrix scraped via eBPF sidecar probes. Hover over pods to inspect DNS query distributions,
                       restart counts, and resource utilization.
                     </p>
@@ -533,12 +536,12 @@ export default function ObservabilityDashboard({
                   {/* Cluster-wide stats */}
                   <div className="flex gap-4 font-mono text-center text-[10px]">
                     {[
-                      { label: 'Total Pods', value: pods.length, color: 'text-white' },
+                      { label: 'Total Pods', value: pods.length, color: 'text-slate-900 dark:text-white' },
                       { label: 'Running',    value: pods.filter(p => p.status === 'Running').length, color: 'text-emerald-400' },
                       { label: 'Warning',    value: pods.filter(p => p.status === 'Warning').length, color: 'text-amber-400' },
                       { label: 'Failed',     value: pods.filter(p => p.status === 'CrashLoopBackOff').length, color: 'text-rose-400' },
                     ].map(({ label, value, color }) => (
-                      <div key={label} className="bg-[#080b11] border border-[#1e293b] rounded px-3 py-2">
+                      <div key={label} className="bg-slate-50 dark:bg-[#080b11] border border-slate-200 dark:border-[#1e293b] rounded px-3 py-2">
                         <p className={`text-xl font-bold ${color}`}>{value}</p>
                         <p className="text-slate-500 text-[8px] uppercase tracking-wider mt-0.5">{label}</p>
                       </div>
@@ -550,12 +553,12 @@ export default function ObservabilityDashboard({
                 <ClusterHealth pods={pods} />
 
                 {/* Pod DNS query ranking */}
-                <div className="bg-[#0c101b] border border-[#1e293b] rounded-lg p-5 shadow-sm">
+                <div className="bg-white dark:bg-[#0c101b] border border-slate-200 dark:border-[#1e293b] rounded-lg p-5 shadow-sm">
                   <span className="text-[9px] font-mono uppercase text-slate-500 tracking-wider mb-4 block">Pod DNS Query Ranking</span>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left font-mono text-[10px] text-slate-300">
+                    <table className="w-full text-left font-mono text-[10px] text-slate-700 dark:text-slate-300">
                       <thead>
-                        <tr className="border-b border-[#1e293b] text-slate-500 font-bold uppercase tracking-wider text-[9px]">
+                        <tr className="border-b border-slate-200 dark:border-[#1e293b] text-slate-500 font-bold uppercase tracking-wider text-[9px]">
                           <th className="pb-3">#</th>
                           <th className="pb-3">Pod</th>
                           <th className="pb-3">Namespace</th>
@@ -569,9 +572,9 @@ export default function ObservabilityDashboard({
                         {[...pods].sort((a, b) => b.dnsQueries - a.dnsQueries).map((pod, i) => (
                           <tr key={pod.id} className="hover:bg-[#121824]/40 transition-colors">
                             <td className="py-2.5 text-slate-600 font-bold">{i + 1}</td>
-                            <td className="py-2.5 text-slate-200 font-medium">{pod.name}</td>
+                            <td className="py-2.5 text-slate-800 dark:text-slate-200 font-medium">{pod.name}</td>
                             <td className="py-2.5">
-                              <span className="px-1.5 py-0.5 rounded bg-[#080b11] border border-[#1e293b] text-slate-400 text-[8px]">{pod.namespace}</span>
+                              <span className="px-1.5 py-0.5 rounded bg-slate-50 dark:bg-[#080b11] border border-slate-200 dark:border-[#1e293b] text-slate-600 dark:text-slate-400 text-[8px]">{pod.namespace}</span>
                             </td>
                             <td className="py-2.5">
                               <span className={`text-[8px] font-bold uppercase ${
@@ -580,8 +583,8 @@ export default function ObservabilityDashboard({
                               }`}>{pod.status}</span>
                             </td>
                             <td className="py-2.5 text-right text-blue-400 font-semibold">{pod.dnsQueries.toLocaleString()}</td>
-                            <td className={`py-2.5 text-right ${parseInt(pod.cpu) > 70 ? 'text-amber-400 font-semibold' : 'text-slate-400'}`}>{pod.cpu}</td>
-                            <td className="py-2.5 text-right text-slate-400">{pod.mem}</td>
+                            <td className={`py-2.5 text-right ${parseInt(pod.cpu) > 70 ? 'text-amber-400 font-semibold' : 'text-slate-600 dark:text-slate-400'}`}>{pod.cpu}</td>
+                            <td className="py-2.5 text-right text-slate-600 dark:text-slate-400">{pod.mem}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -597,10 +600,10 @@ export default function ObservabilityDashboard({
       </div>
 
       {/* ── FOOTER ───────────────────────────────────────────────────────────── */}
-      <footer className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#1e293b] bg-[#0c101b] px-6 py-4 text-[10px] text-slate-500 font-mono">
+      <footer className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-[#1e293b] bg-white dark:bg-[#0c101b] px-6 py-4 text-[10px] text-slate-500 font-mono">
         <div className="flex items-center gap-2">
           <Shield className="w-3.5 h-3.5 text-blue-500" />
-          <span className="font-bold text-slate-400">DNS Sentinel Core v2.0.0</span>
+          <span className="font-bold text-slate-600 dark:text-slate-400">DNS Sentinel Core v2.0.0</span>
         </div>
         <p className="text-center">Kubernetes BPF logs streaming active · Scrape Interval: 2.5s · Context: kind-kind · No API Keys Required</p>
         <div className="flex items-center gap-1.5">
@@ -617,7 +620,7 @@ export default function ObservabilityDashboard({
               initial={{ opacity: 0, y: 30, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-              className="p-4 border border-[#1e293b] bg-[#0c101b]/95 backdrop-blur shadow-lg rounded-lg pointer-events-auto flex items-start gap-3 w-80 font-mono text-[10px]"
+              className="p-4 border border-slate-200 dark:border-[#1e293b] bg-white dark:bg-[#0c101b]/95 backdrop-blur shadow-lg rounded-lg pointer-events-auto flex items-start gap-3 w-80 font-mono text-[10px]"
             >
               <div className="mt-0.5">
                 {alert.type === 'critical' ? <AlertOctagon className="w-4 h-4 text-rose-500 animate-pulse" /> :
@@ -628,10 +631,10 @@ export default function ObservabilityDashboard({
                 <div className="flex justify-between text-[8px] text-slate-500 font-bold uppercase">
                   <span>TELEMETRY NOTIFICATION</span>
                 </div>
-                <h4 className="text-xs font-bold text-white font-sans">{alert.title}</h4>
-                <p className="text-slate-400 leading-normal font-sans font-light">{alert.desc}</p>
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white font-sans">{alert.title}</h4>
+                <p className="text-slate-600 dark:text-slate-400 leading-normal font-sans font-light">{alert.desc}</p>
               </div>
-              <button onClick={() => setFloatingAlerts(prev => prev.filter(a => a.id !== alert.id))} className="text-slate-500 hover:text-white transition-colors font-sans text-xs">✕</button>
+              <button onClick={() => setFloatingAlerts(prev => prev.filter(a => a.id !== alert.id))} className="text-slate-500 hover:text-slate-900 dark:text-white transition-colors font-sans text-xs">✕</button>
             </motion.div>
           ))}
         </AnimatePresence>
@@ -643,25 +646,25 @@ export default function ObservabilityDashboard({
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-md bg-[#0c101b] border border-[#1e293b] rounded-lg p-5 shadow-xl font-mono text-xs"
+            className="w-full max-w-md bg-white dark:bg-[#0c101b] border border-slate-200 dark:border-[#1e293b] rounded-lg p-5 shadow-xl font-mono text-xs"
           >
-            <div className="flex items-center justify-between border-b border-[#1e293b] pb-3 mb-4">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#1e293b] pb-3 mb-4">
               <div className="flex items-center gap-2">
                 <Terminal className="w-4 h-4 text-blue-400" />
-                <span className="font-bold text-slate-200 uppercase tracking-widest text-[9px]">eBPF Payload Decoder</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest text-[9px]">eBPF Payload Decoder</span>
               </div>
-              <button onClick={() => setDecodedPayload(null)} className="text-slate-500 hover:text-white transition-colors text-xs font-bold font-sans">✕ Close</button>
+              <button onClick={() => setDecodedPayload(null)} className="text-slate-500 hover:text-slate-900 dark:text-white transition-colors text-xs font-bold font-sans">✕ Close</button>
             </div>
             <div className="space-y-4 text-[10px] leading-relaxed">
-              <p className="text-slate-400">Raw base64 packet payload captured from network interface:</p>
-              <div className="bg-[#080b11] border border-[#1e293b] rounded p-2.5 text-rose-400 break-all select-all font-semibold">{decodedPayload.raw}</div>
+              <p className="text-slate-600 dark:text-slate-400">Raw base64 packet payload captured from network interface:</p>
+              <div className="bg-slate-50 dark:bg-[#080b11] border border-slate-200 dark:border-[#1e293b] rounded p-2.5 text-rose-400 break-all select-all font-semibold">{decodedPayload.raw}</div>
               <div className="py-1.5 px-3 rounded bg-blue-950/20 border border-blue-500/20 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
                 <p className="text-[9px] text-blue-300 font-bold uppercase tracking-wider">Decoded DNS label stream:</p>
               </div>
               <div>
-                <p className="text-slate-400 font-bold mb-1">DECRYPTED TX RECORD:</p>
-                <div className="bg-[#080b11] border border-blue-500/25 rounded p-2.5 text-emerald-400 text-xs font-bold break-all shadow-inner">{decodedPayload.decoded}</div>
+                <p className="text-slate-600 dark:text-slate-400 font-bold mb-1">DECRYPTED TX RECORD:</p>
+                <div className="bg-slate-50 dark:bg-[#080b11] border border-blue-500/25 rounded p-2.5 text-emerald-400 text-xs font-bold break-all shadow-inner">{decodedPayload.decoded}</div>
               </div>
             </div>
           </motion.div>

@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { ThemeContext } from '../App';
 import { motion, useInView } from 'framer-motion';
 import {
   Shield, Zap, Activity, Database, AlertTriangle, CheckCircle,
   ArrowRight, Terminal, Cpu, Radio, BarChart3, Server,
-  Layers, Globe, Lock, GitBranch, ExternalLink, Eye
+  Layers, Globe, Lock, GitBranch, ExternalLink, Eye, Sun, Moon
 } from 'lucide-react';
 
 // ─── Colour config maps (no dynamic Tailwind classes) ────────────────────────
@@ -59,16 +60,16 @@ function ArchNode({ icon: Icon, label, sub, highlight = false, index = 0 }) {
       className={`flex flex-col items-center gap-2.5 px-4 py-4 rounded-xl border min-w-[90px] transition-all ${
         highlight
           ? 'bg-blue-950/40 border-blue-500/50 shadow-[0_0_25px_rgba(59,130,246,0.2)]'
-          : 'bg-[#0c101b] border-[#1e293b]'
+          : 'bg-white dark:bg-[#0c101b] border-slate-200 dark:border-[#1e293b]'
       }`}
     >
       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
         highlight ? 'bg-blue-500/20 ring-1 ring-blue-500/30' : 'bg-[#1e293b]'
       }`}>
-        <Icon className={`w-5 h-5 ${highlight ? 'text-blue-400' : 'text-slate-400'}`} />
+        <Icon className={`w-5 h-5 ${highlight ? 'text-blue-400' : 'text-slate-600 dark:text-slate-400'}`} />
       </div>
       <div className="text-center">
-        <p className={`text-[10px] font-bold font-mono uppercase tracking-wider ${highlight ? 'text-blue-300' : 'text-slate-300'}`}>{label}</p>
+        <p className={`text-[10px] font-bold font-mono uppercase tracking-wider ${highlight ? 'text-blue-300' : 'text-slate-700 dark:text-slate-300'}`}>{label}</p>
         {sub && <p className="text-[8px] text-slate-500 mt-0.5 font-mono">{sub}</p>}
       </div>
     </motion.div>
@@ -100,19 +101,20 @@ function FeatureCard({ icon: Icon, title, desc, color = 'blue', index = 0 }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: (index % 3) * 0.1, duration: 0.5 }}
-      className={`p-5 rounded-xl border border-[#1e293b] bg-[#0c101b]/60 backdrop-blur transition-all duration-300 ${c.card} hover:border-opacity-60 group`}
+      className={`p-5 rounded-xl border border-slate-200 dark:border-[#1e293b] bg-white dark:bg-[#0c101b]/60 backdrop-blur transition-all duration-300 ${c.card} hover:border-opacity-60 group`}
     >
       <div className={`w-10 h-10 rounded-lg border flex items-center justify-center mb-4 ${c.icon}`}>
         <Icon className={`w-5 h-5 ${c.txt}`} />
       </div>
-      <h3 className="text-sm font-bold text-white mb-2">{title}</h3>
-      <p className="text-xs text-slate-400 leading-relaxed font-light">{desc}</p>
+      <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-2">{title}</h3>
+      <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-light">{desc}</p>
     </motion.div>
   );
 }
 
 // ─── Main Pitch Page ─────────────────────────────────────────────────────────
-export default function PitchPage({ onLaunchDashboard }) {
+export default function PitchPage({ onLaunchDashboard, isLoggedIn }) {
+  const { theme, toggleTheme } = useContext(ThemeContext);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -122,39 +124,42 @@ export default function PitchPage({ onLaunchDashboard }) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#080b11] text-slate-100 font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#080b11] text-slate-900 dark:text-slate-100 font-sans overflow-x-hidden">
 
       {/* ══ STICKY NAV ══════════════════════════════════════════════════════ */}
       <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-[#080b11]/90 backdrop-blur-md border-b border-[#1e293b] shadow-xl' : 'bg-transparent'
+        scrolled ? 'bg-slate-50 dark:bg-[#080b11]/90 backdrop-blur-md border-b border-slate-200 dark:border-[#1e293b] shadow-xl' : 'bg-transparent'
       }`}>
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
             <div className="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
               <Shield className="w-4 h-4 text-blue-400" />
             </div>
-            <span className="font-bold text-white tracking-tight font-mono text-sm">DNS Sentinel</span>
+            <span className="font-bold text-slate-900 dark:text-white tracking-tight font-mono text-sm">DNS Sentinel</span>
           </div>
 
           <div className="flex items-center gap-3">
+            <button onClick={toggleTheme} className="p-2 rounded-lg bg-slate-200 dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
             <a
               href="https://github.com/ANANTH2523/DNS-monitor-"
               target="_blank" rel="noopener noreferrer"
-              className="hidden sm:flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-white transition-colors font-mono"
+              className="hidden sm:flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white transition-colors font-mono"
             >
               <GitBranch className="w-3.5 h-3.5" /> GitHub
             </a>
             <a
               href="#architecture"
-              className="hidden sm:block text-[11px] text-slate-400 hover:text-white transition-colors font-mono"
+              className="hidden sm:block text-[11px] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white transition-colors font-mono"
             >
               Architecture
             </a>
             <button
               onClick={onLaunchDashboard}
-              className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold font-mono rounded-lg transition-all shadow-[0_0_15px_rgba(59,130,246,0.35)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)]"
+              className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white text-[11px] font-bold font-mono rounded-lg transition-all shadow-[0_0_15px_rgba(59,130,246,0.35)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)]"
             >
-              Dashboard <ArrowRight className="w-3 h-3" />
+              {isLoggedIn ? 'Dashboard' : 'Sign In'} <ArrowRight className="w-3 h-3" />
             </button>
           </div>
         </div>
@@ -184,7 +189,7 @@ export default function PitchPage({ onLaunchDashboard }) {
           initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.75, delay: 0.1 }}
-          className="text-5xl sm:text-7xl lg:text-8xl font-black tracking-tight text-white mb-5 leading-none"
+          className="text-5xl sm:text-7xl lg:text-8xl font-black tracking-tight text-slate-900 dark:text-white mb-5 leading-none"
           style={{ fontFamily: "'Outfit', sans-serif" }}
         >
           DNS{' '}
@@ -198,7 +203,7 @@ export default function PitchPage({ onLaunchDashboard }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2 }}
-          className="text-lg sm:text-2xl text-slate-400 max-w-2xl mb-4 font-light leading-relaxed"
+          className="text-lg sm:text-2xl text-slate-600 dark:text-slate-400 max-w-2xl mb-4 font-light leading-relaxed"
         >
           Real-Time DNS Intelligence for Kubernetes
         </motion.p>
@@ -209,7 +214,7 @@ export default function PitchPage({ onLaunchDashboard }) {
           className="text-sm text-slate-500 max-w-xl mb-10 font-light"
         >
           A zero-instrumentation eBPF sidecar that captures every DNS query at the kernel level —
-          <span className="text-slate-300"> no code changes, no proxies, no overhead.</span>
+          <span className="text-slate-700 dark:text-slate-300"> no code changes, no proxies, no overhead.</span>
         </motion.p>
 
         {/* CTA buttons */}
@@ -223,13 +228,13 @@ export default function PitchPage({ onLaunchDashboard }) {
             onClick={onLaunchDashboard}
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.97 }}
-            className="flex items-center gap-2 px-7 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-[0_0_35px_rgba(59,130,246,0.45)] hover:shadow-[0_0_50px_rgba(59,130,246,0.65)] text-sm"
+            className="flex items-center gap-2 px-7 py-3.5 bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-bold rounded-xl transition-all shadow-[0_0_35px_rgba(59,130,246,0.45)] hover:shadow-[0_0_50px_rgba(59,130,246,0.65)] text-sm"
           >
             <Activity className="w-4 h-4" /> Launch Live Dashboard
           </motion.button>
           <a
             href="#architecture"
-            className="flex items-center gap-2 px-7 py-3.5 border border-[#1e293b] hover:border-[#334155] text-slate-300 hover:text-white font-medium rounded-xl transition-all text-sm"
+            className="flex items-center gap-2 px-7 py-3.5 border border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:border-[#334155] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white font-medium rounded-xl transition-all text-sm"
           >
             View Architecture <ArrowRight className="w-4 h-4" />
           </a>
@@ -285,7 +290,7 @@ export default function PitchPage({ onLaunchDashboard }) {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-3xl sm:text-4xl font-black text-white mb-5 leading-tight"
+              className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mb-5 leading-tight"
               style={{ fontFamily: "'Outfit', sans-serif" }}
             >
               DNS is the nervous system of Kubernetes.
@@ -296,7 +301,7 @@ export default function PitchPage({ onLaunchDashboard }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="text-slate-400 leading-relaxed mb-8 font-light"
+              className="text-slate-600 dark:text-slate-400 leading-relaxed mb-8 font-light"
             >
               Every microservice call starts with a DNS lookup. Thousands of queries per second flow through
               your cluster. When something breaks — a SERVFAIL cascade, an NXDOMAIN storm, a latency spike —
@@ -317,7 +322,7 @@ export default function PitchPage({ onLaunchDashboard }) {
                   className={`flex items-start gap-3 p-3.5 rounded-lg border ${color} border-opacity-20`}
                 >
                   <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-300">{text}</span>
+                  <span className="text-sm text-slate-700 dark:text-slate-300">{text}</span>
                 </motion.div>
               ))}
             </div>
@@ -328,9 +333,9 @@ export default function PitchPage({ onLaunchDashboard }) {
             initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="bg-[#090c13] border border-[#1e293b] rounded-xl overflow-hidden shadow-2xl"
+            className="bg-slate-50 dark:bg-[#090c13] border border-slate-200 dark:border-[#1e293b] rounded-xl overflow-hidden shadow-2xl"
           >
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-[#1e293b] bg-[#0c101b]">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-200 dark:border-[#1e293b] bg-white dark:bg-[#0c101b]">
               <div className="w-2.5 h-2.5 rounded-full bg-rose-500/60" />
               <div className="w-2.5 h-2.5 rounded-full bg-amber-500/60" />
               <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/60" />
@@ -338,16 +343,16 @@ export default function PitchPage({ onLaunchDashboard }) {
             </div>
             <div className="p-4 font-mono text-[9.5px] space-y-1.5 leading-relaxed">
               {[
-                { msg: '[INFO] 10.244.0.5:54321 - "A IN api.stripe.com." NOERROR 0.001234s',                    c: 'text-slate-400' },
+                { msg: '[INFO] 10.244.0.5:54321 - "A IN api.stripe.com." NOERROR 0.001234s',                    c: 'text-slate-600 dark:text-slate-400' },
                 { msg: '[INFO] 10.244.0.6:58221 - "A IN broken-api.internal.local." SERVFAIL 3.514s',           c: 'text-rose-400'  },
                 { msg: '[INFO] 10.244.0.7:12445 - "TXT IN suspicious-payload-data.xyz." NXDOMAIN 0.503s',       c: 'text-amber-400' },
-                { msg: '[INFO] 10.244.0.5:54400 - "A IN google.com." NOERROR 0.004s',                           c: 'text-slate-400' },
+                { msg: '[INFO] 10.244.0.5:54400 - "A IN google.com." NOERROR 0.004s',                           c: 'text-slate-600 dark:text-slate-400' },
                 { msg: '[INFO] 10.244.0.8:31001 - "A IN broken-api.internal.local." SERVFAIL 3.512s',           c: 'text-rose-400'  },
-                { msg: '[INFO] 10.244.0.5:54502 - "AAAA IN slack.com." NOERROR 0.018s',                         c: 'text-slate-400' },
+                { msg: '[INFO] 10.244.0.5:54502 - "AAAA IN slack.com." NOERROR 0.018s',                         c: 'text-slate-600 dark:text-slate-400' },
               ].map(({ msg, c }, i) => (
                 <div key={i} className={c}>{msg}</div>
               ))}
-              <div className="pt-2.5 border-t border-[#1e293b] mt-1 text-slate-600 italic text-[9px]">
+              <div className="pt-2.5 border-t border-slate-200 dark:border-[#1e293b] mt-1 text-slate-600 italic text-[9px]">
                 ↑ Raw CoreDNS logs. No latency analysis. No anomaly detection. No per-pod attribution.
               </div>
             </div>
@@ -356,7 +361,7 @@ export default function PitchPage({ onLaunchDashboard }) {
       </section>
 
       {/* ══ ANIMATED STATS ════════════════════════════════════════════════ */}
-      <section className="py-16 border-y border-[#1e293b] bg-[#0c101b]/50">
+      <section className="py-16 border-y border-slate-200 dark:border-[#1e293b] bg-white dark:bg-[#0c101b]/50">
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 lg:grid-cols-4 gap-10 text-center">
           {[
             { prefix: '',  target: 512408, suffix: '+',   decimals: 0, label: 'DNS Queries Captured',   sub: 'live from eBPF sockets',   color: 'text-blue-400'    },
@@ -374,7 +379,7 @@ export default function PitchPage({ onLaunchDashboard }) {
               <p className={`text-4xl sm:text-5xl font-black font-mono ${color} mb-1.5`}>
                 <Counter target={target} suffix={suffix} prefix={prefix} decimals={decimals} />
               </p>
-              <p className="text-sm font-semibold text-white">{label}</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">{label}</p>
               <p className="text-[10px] text-slate-500 font-mono mt-1">{sub}</p>
             </motion.div>
           ))}
@@ -396,7 +401,7 @@ export default function PitchPage({ onLaunchDashboard }) {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl sm:text-4xl font-black text-white mb-4"
+            className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mb-4"
             style={{ fontFamily: "'Outfit', sans-serif" }}
           >
             Complete DNS visibility in{' '}
@@ -408,7 +413,7 @@ export default function PitchPage({ onLaunchDashboard }) {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-slate-400 max-w-2xl mx-auto font-light text-sm"
+            className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-light text-sm"
           >
             DNS Sentinel deploys as a lightweight Kubernetes sidecar. It captures every DNS packet at the
             kernel level using eBPF raw sockets — with zero application changes and zero performance overhead.
@@ -435,8 +440,8 @@ export default function PitchPage({ onLaunchDashboard }) {
                 <div className={`w-11 h-11 rounded-xl border flex items-center justify-center mb-5 ${s.ib}`}>
                   <Icon className={`w-5 h-5 ${s.ic}`} />
                 </div>
-                <h3 className="text-sm font-bold text-white mb-2.5">{title}</h3>
-                <p className="text-xs text-slate-400 leading-relaxed font-light">{desc}</p>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-2.5">{title}</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-light">{desc}</p>
               </motion.div>
             );
           })}
@@ -444,7 +449,7 @@ export default function PitchPage({ onLaunchDashboard }) {
       </section>
 
       {/* ══ ARCHITECTURE ══════════════════════════════════════════════════ */}
-      <section id="architecture" className="py-28 px-6 bg-[#090c13] border-y border-[#1e293b]">
+      <section id="architecture" className="py-28 px-6 bg-slate-50 dark:bg-[#090c13] border-y border-slate-200 dark:border-[#1e293b]">
         <div className="max-w-6xl mx-auto">
 
           <div className="text-center mb-16">
@@ -460,7 +465,7 @@ export default function PitchPage({ onLaunchDashboard }) {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-3xl sm:text-4xl font-black text-white mb-4"
+              className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mb-4"
               style={{ fontFamily: "'Outfit', sans-serif" }}
             >
               End-to-end DNS observability pipeline
@@ -469,7 +474,7 @@ export default function PitchPage({ onLaunchDashboard }) {
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="text-slate-400 font-light text-sm max-w-xl mx-auto"
+              className="text-slate-600 dark:text-slate-400 font-light text-sm max-w-xl mx-auto"
             >
               From kernel-level packet capture to live Grafana-style dashboards in milliseconds.
             </motion.p>
@@ -536,11 +541,11 @@ dns_query_duration_seconds{
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-[#0c101b] border border-[#1e293b] rounded-xl p-5 space-y-3"
+                className="bg-white dark:bg-[#0c101b] border border-slate-200 dark:border-[#1e293b] rounded-xl p-5 space-y-3"
               >
-                <h3 className="text-[10px] font-bold text-white uppercase tracking-widest">{title}</h3>
-                <p className="text-[11px] text-slate-400 leading-relaxed">{desc}</p>
-                <div className="bg-[#080b11] border border-[#1e293b] rounded-lg p-3 font-mono text-[9px] text-slate-400 leading-relaxed whitespace-pre-wrap">
+                <h3 className="text-[10px] font-bold text-slate-900 dark:text-white uppercase tracking-widest">{title}</h3>
+                <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">{desc}</p>
+                <div className="bg-slate-50 dark:bg-[#080b11] border border-slate-200 dark:border-[#1e293b] rounded-lg p-3 font-mono text-[9px] text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-wrap">
                   {code}
                 </div>
               </motion.div>
@@ -564,7 +569,7 @@ dns_query_duration_seconds{
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl sm:text-4xl font-black text-white"
+            className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white"
             style={{ fontFamily: "'Outfit', sans-serif" }}
           >
             Everything you need to own your DNS layer
@@ -581,7 +586,7 @@ dns_query_duration_seconds{
       </section>
 
       {/* ══ DASHBOARD PREVIEW ═════════════════════════════════════════════ */}
-      <section className="py-16 px-6 bg-[#090c13] border-y border-[#1e293b]">
+      <section className="py-16 px-6 bg-slate-50 dark:bg-[#090c13] border-y border-slate-200 dark:border-[#1e293b]">
         <div className="max-w-6xl mx-auto text-center">
           <motion.span
             initial={{ opacity: 0 }}
@@ -595,7 +600,7 @@ dns_query_duration_seconds{
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-2xl sm:text-3xl font-black text-white mb-3"
+            className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mb-3"
             style={{ fontFamily: "'Outfit', sans-serif" }}
           >
             4 powerful tabs. One unified observability platform.
@@ -604,7 +609,7 @@ dns_query_duration_seconds{
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-slate-400 text-sm font-light mb-10 max-w-xl mx-auto"
+            className="text-slate-600 dark:text-slate-400 text-sm font-light mb-10 max-w-xl mx-auto"
           >
             All features run live in the browser — no backend, no API keys.
           </motion.p>
@@ -625,12 +630,12 @@ dns_query_duration_seconds{
                 className={`p-5 rounded-xl border text-left ${col}`}
               >
                 <div className="flex items-center gap-2 mb-4">
-                  <Icon className="w-4 h-4 text-slate-400" />
-                  <span className="text-[11px] font-bold text-white font-mono uppercase tracking-wider">{tab}</span>
+                  <Icon className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                  <span className="text-[11px] font-bold text-slate-900 dark:text-white font-mono uppercase tracking-wider">{tab}</span>
                 </div>
                 <ul className="space-y-1.5">
                   {items.map((item, j) => (
-                    <li key={j} className="flex items-start gap-2 text-[11px] text-slate-400">
+                    <li key={j} className="flex items-start gap-2 text-[11px] text-slate-600 dark:text-slate-400">
                       <CheckCircle className="w-3 h-3 text-emerald-500 flex-shrink-0 mt-0.5" />
                       {item}
                     </li>
@@ -647,7 +652,7 @@ dns_query_duration_seconds{
             onClick={onLaunchDashboard}
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.97 }}
-            className="mt-10 inline-flex items-center gap-2 px-7 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-sm transition-all shadow-[0_0_35px_rgba(59,130,246,0.4)] hover:shadow-[0_0_50px_rgba(59,130,246,0.6)]"
+            className="mt-10 inline-flex items-center gap-2 px-7 py-3.5 bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-bold rounded-xl text-sm transition-all shadow-[0_0_35px_rgba(59,130,246,0.4)] hover:shadow-[0_0_50px_rgba(59,130,246,0.6)]"
           >
             <Eye className="w-4 h-4" /> Open Live Dashboard <ArrowRight className="w-4 h-4" />
           </motion.button>
@@ -686,9 +691,9 @@ dns_query_duration_seconds{
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.04 }}
-                className="px-3.5 py-2 bg-[#0c101b] border border-[#1e293b] rounded-lg hover:border-[#334155] transition-colors cursor-default text-center"
+                className="px-3.5 py-2 bg-white dark:bg-[#0c101b] border border-slate-200 dark:border-[#1e293b] rounded-lg hover:border-slate-300 dark:border-[#334155] transition-colors cursor-default text-center"
               >
-                <p className="text-[11px] font-bold text-slate-200 font-mono">{label}</p>
+                <p className="text-[11px] font-bold text-slate-800 dark:text-slate-200 font-mono">{label}</p>
                 <p className="text-[9px] text-slate-600 mt-0.5">{sub}</p>
               </motion.div>
             ))}
@@ -710,11 +715,11 @@ dns_query_duration_seconds{
             <div className="w-18 h-18 rounded-2xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center mx-auto mb-7 shadow-[0_0_50px_rgba(59,130,246,0.25)]" style={{ width: 72, height: 72 }}>
               <Shield className="w-9 h-9 text-blue-400" />
             </div>
-            <h2 className="text-4xl sm:text-6xl font-black text-white mb-5 leading-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
+            <h2 className="text-4xl sm:text-6xl font-black text-slate-900 dark:text-white mb-5 leading-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
               See it live.{' '}
               <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Right now.</span>
             </h2>
-            <p className="text-slate-400 text-lg font-light mb-10 max-w-xl mx-auto leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-400 text-lg font-light mb-10 max-w-xl mx-auto leading-relaxed">
               No setup. No API keys. No backend. Just real-time DNS observability running entirely in the browser.
             </p>
           </motion.div>
@@ -726,7 +731,7 @@ dns_query_duration_seconds{
             onClick={onLaunchDashboard}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
-            className="inline-flex items-center gap-3 px-10 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-base rounded-xl transition-all shadow-[0_0_50px_rgba(59,130,246,0.45)] hover:shadow-[0_0_70px_rgba(59,130,246,0.65)]"
+            className="inline-flex items-center gap-3 px-10 py-4 bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-bold text-base rounded-xl transition-all shadow-[0_0_50px_rgba(59,130,246,0.45)] hover:shadow-[0_0_70px_rgba(59,130,246,0.65)]"
           >
             <Activity className="w-5 h-5" />
             Launch Live Dashboard
@@ -749,17 +754,17 @@ dns_query_duration_seconds{
       </section>
 
       {/* ══ FOOTER ════════════════════════════════════════════════════════ */}
-      <footer className="border-t border-[#1e293b] py-6 px-6 bg-[#0c101b]">
+      <footer className="border-t border-slate-200 dark:border-[#1e293b] py-6 px-6 bg-white dark:bg-[#0c101b]">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-slate-500 font-mono">
           <div className="flex items-center gap-2">
             <Shield className="w-3.5 h-3.5 text-blue-500" />
-            <span className="font-bold text-slate-400">DNS Sentinel</span>
+            <span className="font-bold text-slate-600 dark:text-slate-400">DNS Sentinel</span>
             <span>· Zero-Instrumentation DNS Observability for Kubernetes</span>
           </div>
           <a
             href="https://github.com/ANANTH2523/DNS-monitor-"
             target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-1.5 hover:text-slate-300 transition-colors"
+            className="flex items-center gap-1.5 hover:text-slate-700 dark:text-slate-300 transition-colors"
           >
             <GitBranch className="w-3.5 h-3.5" />
             github.com/ANANTH2523/DNS-monitor-

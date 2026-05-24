@@ -36,7 +36,7 @@ export default function DnsTypeChart({ recordTypeStats }) {
   const slices = buildSlices(recordTypeStats);
 
   return (
-    <div className="bg-[#0c101b] border border-[#1e293b] rounded-lg p-5 shadow-sm h-full">
+    <div className="bg-white dark:bg-[#0c101b] border border-slate-200 dark:border-[#1e293b] rounded-lg p-5 shadow-sm h-full">
       <div className="flex items-center gap-1.5 mb-4">
         <span className="text-[9px] font-mono uppercase text-slate-500 tracking-wider font-bold">
           DNS Record Type Distribution
@@ -78,7 +78,7 @@ export default function DnsTypeChart({ recordTypeStats }) {
             <div key={s.type} className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: s.color }} />
-                <span className="text-slate-300 font-bold">{s.type}</span>
+                <span className="text-slate-700 dark:text-slate-300 font-bold">{s.type}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-14 h-1 bg-[#1e293b] rounded overflow-hidden">

@@ -45,7 +45,7 @@ export default function ClusterHealth({ pods }) {
   });
 
   return (
-    <div className="bg-[#0c101b] border border-[#1e293b] rounded-lg p-5 shadow-sm space-y-5">
+    <div className="bg-white dark:bg-[#0c101b] border border-slate-200 dark:border-[#1e293b] rounded-lg p-5 shadow-sm space-y-5">
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -54,7 +54,7 @@ export default function ClusterHealth({ pods }) {
             <Server className="w-3.5 h-3.5 text-blue-500" />
             Kubernetes Pod Registry
           </span>
-          <h3 className="text-xs font-bold text-slate-200 mt-0.5">Live Pod Health Matrix</h3>
+          <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">Live Pod Health Matrix</h3>
         </div>
 
         {/* Summary badges */}
@@ -88,7 +88,7 @@ export default function ClusterHealth({ pods }) {
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className={`w-2 h-2 rounded-full flex-shrink-0 ${cfg.dot}`} />
-                  <span className="text-white font-semibold truncate">{pod.name}</span>
+                  <span className="text-slate-900 dark:text-white font-semibold truncate">{pod.name}</span>
                 </div>
                 <span className={`text-[8px] font-bold uppercase px-1.5 py-0.5 rounded border flex-shrink-0 ${cfg.bg} ${cfg.border} ${cfg.text}`}>
                   {pod.status}
@@ -99,13 +99,13 @@ export default function ClusterHealth({ pods }) {
               <div className="grid grid-cols-3 gap-2 mt-2.5 text-[9px] text-slate-500">
                 <div>
                   <p className="text-[8px] uppercase tracking-wider">Namespace</p>
-                  <p className="text-slate-300 font-semibold mt-0.5">{pod.namespace}</p>
+                  <p className="text-slate-700 dark:text-slate-300 font-semibold mt-0.5">{pod.namespace}</p>
                 </div>
                 <div>
                   <p className="text-[8px] uppercase tracking-wider">Restarts</p>
                   <p className={`font-semibold mt-0.5 ${
                     pod.restarts > 5 ? 'text-rose-400' :
-                    pod.restarts > 0 ? 'text-amber-400' : 'text-slate-300'
+                    pod.restarts > 0 ? 'text-amber-400' : 'text-slate-700 dark:text-slate-300'
                   }`}>
                     {pod.restarts}
                   </p>
@@ -117,10 +117,10 @@ export default function ClusterHealth({ pods }) {
               </div>
 
               {/* Footer metrics */}
-              <div className="flex gap-4 mt-2 pt-2 border-t border-[#1e293b]/40 text-[9px] text-slate-500">
-                <span>CPU: <span className={parseInt(pod.cpu) > 70 ? 'text-amber-400 font-semibold' : 'text-slate-300'}>{pod.cpu}</span></span>
-                <span>Mem: <span className="text-slate-300">{pod.mem}</span></span>
-                <span>Age: <span className="text-slate-300">{pod.age}</span></span>
+              <div className="flex gap-4 mt-2 pt-2 border-t border-slate-200 dark:border-[#1e293b]/40 text-[9px] text-slate-500">
+                <span>CPU: <span className={parseInt(pod.cpu) > 70 ? 'text-amber-400 font-semibold' : 'text-slate-700 dark:text-slate-300'}>{pod.cpu}</span></span>
+                <span>Mem: <span className="text-slate-700 dark:text-slate-300">{pod.mem}</span></span>
+                <span>Age: <span className="text-slate-700 dark:text-slate-300">{pod.age}</span></span>
               </div>
             </div>
           );
@@ -128,7 +128,7 @@ export default function ClusterHealth({ pods }) {
       </div>
 
       {/* Legend footnote */}
-      <div className="text-[8px] text-slate-500 font-mono pt-1 border-t border-[#1e293b]/40 leading-normal">
+      <div className="text-[8px] text-slate-500 font-mono pt-1 border-t border-slate-200 dark:border-[#1e293b]/40 leading-normal">
         🔴 CrashLoopBackOff pods are excluded from DNS routing until health checks pass.
       </div>
     </div>

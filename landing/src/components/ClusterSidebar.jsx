@@ -46,16 +46,16 @@ export default function ClusterSidebar({
   }
 
   return (
-    <aside className="w-56 flex-shrink-0 h-screen bg-[#090c13] border-r border-[#1e293b] flex flex-col overflow-hidden">
+    <aside className="w-56 flex-shrink-0 h-screen bg-slate-50 dark:bg-[#090c13] border-r border-slate-200 dark:border-[#1e293b] flex flex-col overflow-hidden">
 
       {/* ── Org header ───────────────────────────────────────────────────── */}
-      <div className="px-4 py-4 border-b border-[#1e293b]">
+      <div className="px-4 py-4 border-b border-slate-200 dark:border-[#1e293b]">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-blue-500/20 border border-blue-500/25 flex items-center justify-center flex-shrink-0">
             <Server className="w-3.5 h-3.5 text-blue-400" />
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-bold text-white font-mono truncate">{orgName}</p>
+            <p className="text-[11px] font-bold text-slate-900 dark:text-white font-mono truncate">{orgName}</p>
             <span className="text-[8px] font-mono text-slate-500 uppercase tracking-widest border border-slate-700 px-1 rounded">
               Free Plan
             </span>
@@ -81,8 +81,8 @@ export default function ClusterSidebar({
                 onClick={() => onSelectCluster(cluster.id)}
                 className={`w-full text-left px-4 py-2.5 transition-all relative group ${
                   isActive
-                    ? 'bg-blue-950/30 text-white'
-                    : 'text-slate-400 hover:bg-[#0c101b] hover:text-slate-200'
+                    ? 'bg-blue-950/30 text-slate-900 dark:text-white'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-white dark:bg-[#0c101b] hover:text-slate-800 dark:text-slate-200'
                 }`}
               >
                 {/* Active left border */}
@@ -147,7 +147,7 @@ export default function ClusterSidebar({
                   onChange={e => setNewName(e.target.value)}
                   placeholder="cluster-name"
                   maxLength={40}
-                  className="w-full bg-[#080b11] border border-[#1e293b] rounded-lg px-2.5 py-1.5 text-[10px] font-mono text-white placeholder-slate-600 focus:border-blue-500/50 focus:outline-none"
+                  className="w-full bg-slate-50 dark:bg-[#080b11] border border-slate-200 dark:border-[#1e293b] rounded-lg px-2.5 py-1.5 text-[10px] font-mono text-slate-900 dark:text-white placeholder-slate-600 focus:border-blue-500/50 focus:outline-none"
                 />
                 {createError && (
                   <p className="text-[8px] text-rose-400 font-mono">{createError}</p>
@@ -156,7 +156,7 @@ export default function ClusterSidebar({
                   <button
                     type="submit"
                     disabled={createLoading || !newName.trim()}
-                    className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white text-[9px] font-bold font-mono rounded-lg transition-colors"
+                    className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-slate-900 dark:text-white text-[9px] font-bold font-mono rounded-lg transition-colors"
                   >
                     {createLoading
                       ? <span className="w-2.5 h-2.5 border border-white border-t-transparent rounded-full animate-spin" />
@@ -165,7 +165,7 @@ export default function ClusterSidebar({
                   <button
                     type="button"
                     onClick={() => { setCreating(false); setNewName(''); setCreateError(''); }}
-                    className="px-2 py-1.5 border border-[#1e293b] hover:border-[#334155] text-slate-400 hover:text-slate-200 rounded-lg transition-colors"
+                    className="px-2 py-1.5 border border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:border-[#334155] text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 rounded-lg transition-colors"
                   >
                     <X className="w-2.5 h-2.5" />
                   </button>
@@ -177,7 +177,7 @@ export default function ClusterSidebar({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 onClick={() => setCreating(true)}
-                className="w-full flex items-center gap-1.5 px-2 py-1.5 border border-dashed border-[#1e293b] hover:border-blue-500/30 text-slate-500 hover:text-blue-400 rounded-lg transition-all text-[9px] font-mono font-bold uppercase tracking-wider"
+                className="w-full flex items-center gap-1.5 px-2 py-1.5 border border-dashed border-slate-200 dark:border-[#1e293b] hover:border-blue-500/30 text-slate-500 hover:text-blue-400 rounded-lg transition-all text-[9px] font-mono font-bold uppercase tracking-wider"
               >
                 <Plus className="w-3 h-3" /> Add Cluster
               </motion.button>
@@ -187,7 +187,7 @@ export default function ClusterSidebar({
       </div>
 
       {/* ── User footer ───────────────────────────────────────────────────── */}
-      <div className="px-4 py-3 border-t border-[#1e293b] space-y-2">
+      <div className="px-4 py-3 border-t border-slate-200 dark:border-[#1e293b] space-y-2">
         {userEmail && (
           <p className="text-[9px] text-slate-500 font-mono truncate">{userEmail}</p>
         )}

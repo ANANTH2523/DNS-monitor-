@@ -28,16 +28,16 @@ export default function ThreatAlerts({
   };
 
   return (
-    <div className="bg-[#0c101b] border border-[#1e293b] rounded-lg p-5 shadow-sm space-y-4">
+    <div className="bg-white dark:bg-[#0c101b] border border-slate-200 dark:border-[#1e293b] rounded-lg p-5 shadow-sm space-y-4">
       
       {/* SIEM Header */}
-      <div className="flex justify-between items-center pb-3 border-b border-[#1e293b]/60">
+      <div className="flex justify-between items-center pb-3 border-b border-slate-200 dark:border-[#1e293b]/60">
         <div className="space-y-0.5">
           <span className="text-[9px] font-mono uppercase text-slate-500 tracking-wider flex items-center gap-1.5 font-bold">
             <AlertOctagon className="w-3.5 h-3.5 text-rose-500" />
             Threat Detection Alerts
           </span>
-          <h3 className="text-xs font-bold text-slate-200">Outbound DNS Security Incident Log</h3>
+          <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200">Outbound DNS Security Incident Log</h3>
         </div>
         <div className="text-[9px] font-mono text-rose-500 bg-rose-950/30 border border-rose-500/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
           Score: {threatScore}%
@@ -83,10 +83,10 @@ export default function ThreatAlerts({
                       <span>eBPF SIEM bulletin ({threat.type})</span>
                       <span>{threat.ts}</span>
                     </div>
-                    <h4 className="text-xs font-bold text-white font-sans flex items-center gap-1.5 mt-0.5">
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white font-sans flex items-center gap-1.5 mt-0.5">
                       {threat.title}
                     </h4>
-                    <p className="text-slate-400 font-sans font-light leading-relaxed text-[10.5px]">{threat.desc}</p>
+                    <p className="text-slate-600 dark:text-slate-400 font-sans font-light leading-relaxed text-[10.5px]">{threat.desc}</p>
                     
                     <div className="flex gap-4 pt-1 text-[8.5px] text-slate-500">
                       <span>Source IP: {threat.source}</span>
@@ -97,7 +97,7 @@ export default function ThreatAlerts({
 
                 {/* Remediation Action Links */}
                 {!isQuarantined && (
-                  <div className="flex items-center gap-2 mt-1 border-t border-[#1e293b]/60 pt-2.5">
+                  <div className="flex items-center gap-2 mt-1 border-t border-slate-200 dark:border-[#1e293b]/60 pt-2.5">
                     {remediatingThreatId === threat.id ? (
                       <div className="flex items-center gap-1.5 text-blue-400 font-mono text-[8px] font-bold">
                         <RefreshCw className="w-2.5 h-2.5 animate-spin" />
@@ -114,14 +114,14 @@ export default function ThreatAlerts({
                         {threat.type === 'critical' && (
                           <button
                             onClick={() => onDecode(threat)}
-                            className="px-2.5 py-0.5 bg-[#1a202c] hover:bg-[#2d3748] border border-[#334155] text-blue-400 rounded font-bold text-[8.5px] transition-colors"
+                            className="px-2.5 py-0.5 bg-[#1a202c] hover:bg-[#2d3748] border border-slate-300 dark:border-[#334155] text-blue-400 rounded font-bold text-[8.5px] transition-colors"
                           >
                             Inspect Payload
                           </button>
                         )}
                         <button
                           onClick={() => onMute(threat)}
-                          className="px-2.5 py-0.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-500 hover:text-slate-300 rounded text-[8.5px] transition-colors"
+                          className="px-2.5 py-0.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-500 hover:text-slate-700 dark:text-slate-300 rounded text-[8.5px] transition-colors"
                         >
                           Dismiss
                         </button>
@@ -151,7 +151,7 @@ export default function ThreatAlerts({
         </div>
       )}
 
-      <div className="text-[8px] text-slate-500 font-mono leading-normal pt-1.5 border-t border-[#1e293b]/40">
+      <div className="text-[8px] text-slate-500 font-mono leading-normal pt-1.5 border-t border-slate-200 dark:border-[#1e293b]/40">
         🛡️ Quarantine Pod applies a strict denying NetworkPolicy isolating namespaces from SDN routers.
       </div>
     </div>

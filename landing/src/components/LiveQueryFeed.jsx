@@ -52,19 +52,19 @@ export default function LiveQueryFeed({ logs, loading = false }) {
   };
 
   return (
-    <div className="p-5 rounded-lg bg-[#0c101b] border border-[#1e293b] space-y-4 shadow-sm">
+    <div className="p-5 rounded-lg bg-white dark:bg-[#0c101b] border border-slate-200 dark:border-[#1e293b] space-y-4 shadow-sm">
       
       {/* Header controls */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between pb-4 border-b border-[#1e293b]">
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1e293b]">
         <div className="space-y-0.5 text-left">
           <span className="text-[9px] font-mono uppercase tracking-widest text-blue-500 font-bold">Query Telemetry Stream</span>
-          <h3 className="text-xs font-bold text-white font-sans">Filter & Search Real-Time DNS Resolver Packets</h3>
+          <h3 className="text-xs font-bold text-slate-900 dark:text-white font-sans">Filter & Search Real-Time DNS Resolver Packets</h3>
         </div>
         
         {filteredQueries.length > 0 && (
           <button 
             onClick={handleExportCSV}
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-[#1e293b] bg-[#080b11] hover:bg-[#1a202c] hover:border-[#334155] text-slate-400 hover:text-white rounded transition-colors text-[9px] font-mono font-bold self-end sm:self-auto"
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 dark:border-[#1e293b] bg-slate-50 dark:bg-[#080b11] hover:bg-[#1a202c] hover:border-slate-300 dark:border-[#334155] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white rounded transition-colors text-[9px] font-mono font-bold self-end sm:self-auto"
           >
             <Download className="w-3 h-3 text-blue-400" />
             Export CSV Dataset
@@ -76,25 +76,25 @@ export default function LiveQueryFeed({ logs, loading = false }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 font-mono text-[10px]">
         
         {/* Search target domain input */}
-        <div className="relative flex items-center bg-[#080b11] border border-[#1e293b] rounded px-3 py-1.5">
+        <div className="relative flex items-center bg-slate-50 dark:bg-[#080b11] border border-slate-200 dark:border-[#1e293b] rounded px-3 py-1.5">
           <Search className="w-3.5 h-3.5 text-slate-500 mr-2" />
           <input 
             type="text" 
             placeholder="Search domain..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-transparent text-slate-200 outline-none w-full placeholder-slate-600 text-[10px]"
+            className="bg-transparent text-slate-800 dark:text-slate-200 outline-none w-full placeholder-slate-600 text-[10px]"
           />
         </div>
 
         {/* Namespace Filter dropdown */}
-        <div className="flex items-center bg-[#080b11] border border-[#1e293b] rounded px-2.5 py-1.5 text-slate-400">
+        <div className="flex items-center bg-slate-50 dark:bg-[#080b11] border border-slate-200 dark:border-[#1e293b] rounded px-2.5 py-1.5 text-slate-600 dark:text-slate-400">
           <Layers className="w-3.5 h-3.5 text-slate-500 mr-2" />
           <span className="mr-1 text-slate-500">NS:</span>
           <select 
             value={selectedNamespace} 
             onChange={(e) => setSelectedNamespace(e.target.value)}
-            className="bg-transparent text-slate-200 font-bold outline-none cursor-pointer w-full text-[10px]"
+            className="bg-transparent text-slate-800 dark:text-slate-200 font-bold outline-none cursor-pointer w-full text-[10px]"
           >
             <option value="all">All Namespaces</option>
             <option value="default">default</option>
@@ -105,13 +105,13 @@ export default function LiveQueryFeed({ logs, loading = false }) {
         </div>
 
         {/* Status code filter dropdown */}
-        <div className="flex items-center bg-[#080b11] border border-[#1e293b] rounded px-2.5 py-1.5 text-slate-400">
+        <div className="flex items-center bg-slate-50 dark:bg-[#080b11] border border-slate-200 dark:border-[#1e293b] rounded px-2.5 py-1.5 text-slate-600 dark:text-slate-400">
           <Filter className="w-3.5 h-3.5 text-slate-500 mr-2" />
           <span className="mr-1 text-slate-500">Status:</span>
           <select 
             value={statusFilter} 
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-transparent text-slate-200 font-bold outline-none cursor-pointer w-full text-[10px]"
+            className="bg-transparent text-slate-800 dark:text-slate-200 font-bold outline-none cursor-pointer w-full text-[10px]"
           >
             <option value="all">All Logs</option>
             <option value="success">Success (OK)</option>
@@ -120,13 +120,13 @@ export default function LiveQueryFeed({ logs, loading = false }) {
         </div>
 
         {/* Record Type filter dropdown */}
-        <div className="flex items-center bg-[#080b11] border border-[#1e293b] rounded px-2.5 py-1.5 text-slate-400">
+        <div className="flex items-center bg-slate-50 dark:bg-[#080b11] border border-slate-200 dark:border-[#1e293b] rounded px-2.5 py-1.5 text-slate-600 dark:text-slate-400">
           <Tag className="w-3.5 h-3.5 text-slate-500 mr-2" />
           <span className="mr-1 text-slate-500">Type:</span>
           <select 
             value={selectedType} 
             onChange={(e) => setSelectedType(e.target.value)}
-            className="bg-transparent text-slate-200 font-bold outline-none cursor-pointer w-full text-[10px]"
+            className="bg-transparent text-slate-800 dark:text-slate-200 font-bold outline-none cursor-pointer w-full text-[10px]"
           >
             <option value="all">All Types</option>
             <option value="A">A records</option>
@@ -139,10 +139,10 @@ export default function LiveQueryFeed({ logs, loading = false }) {
       </div>
 
       {/* Grid Datagrid table */}
-      <div className="overflow-x-auto border border-[#1e293b]/60 rounded-lg">
-        <table className="w-full text-left font-mono text-[10px] text-slate-300">
+      <div className="overflow-x-auto border border-slate-200 dark:border-[#1e293b]/60 rounded-lg">
+        <table className="w-full text-left font-mono text-[10px] text-slate-700 dark:text-slate-300">
           <thead>
-            <tr className="border-b border-[#1e293b] bg-[#090c15] text-slate-500 font-bold uppercase tracking-wider text-[9px]">
+            <tr className="border-b border-slate-200 dark:border-[#1e293b] bg-[#090c15] text-slate-500 font-bold uppercase tracking-wider text-[9px]">
               <th className="py-2.5 px-4">Timestamp</th>
               <th className="py-2.5 px-4">Namespace</th>
               <th className="py-2.5 px-4">Pod source</th>
@@ -155,7 +155,7 @@ export default function LiveQueryFeed({ logs, loading = false }) {
           <tbody className="divide-y divide-[#1e293b]/40">
             {loading ? (
               Array.from({ length: 4 }).map((_, i) => (
-                <tr key={i} className="animate-pulse bg-[#0c101b]">
+                <tr key={i} className="animate-pulse bg-white dark:bg-[#0c101b]">
                   <td colSpan="7" className="py-3 px-4">
                     <div className="h-3.5 bg-[#1e293b]/50 rounded w-full" />
                   </td>
@@ -166,16 +166,16 @@ export default function LiveQueryFeed({ logs, loading = false }) {
                 <tr key={log.id} className="hover:bg-[#121824]/40 transition-colors">
                   <td className="py-3 px-4 text-slate-500">{log.ts}</td>
                   <td className="py-3 px-4">
-                    <span className="px-1.5 py-0.5 rounded bg-[#080b11] border border-[#1e293b] font-bold text-slate-400">
+                    <span className="px-1.5 py-0.5 rounded bg-slate-50 dark:bg-[#080b11] border border-slate-200 dark:border-[#1e293b] font-bold text-slate-600 dark:text-slate-400">
                       {log.namespace}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-slate-400">{log.pod}</td>
-                  <td className={`py-3 px-4 font-semibold truncate max-w-xs ${log.status === 'ERROR' ? 'text-amber-400' : 'text-slate-200'}`}>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400">{log.pod}</td>
+                  <td className={`py-3 px-4 font-semibold truncate max-w-xs ${log.status === 'ERROR' ? 'text-amber-400' : 'text-slate-800 dark:text-slate-200'}`}>
                     {log.domain}
                   </td>
                   <td className="py-3 px-4 text-center text-slate-500 font-bold">{log.type}</td>
-                  <td className={`py-3 px-4 text-right font-medium ${log.latency > 1000 ? 'text-rose-500' : 'text-slate-400'}`}>
+                  <td className={`py-3 px-4 text-right font-medium ${log.latency > 1000 ? 'text-rose-500' : 'text-slate-600 dark:text-slate-400'}`}>
                     {log.latency}ms
                   </td>
                   <td className="py-3 px-4 text-center">

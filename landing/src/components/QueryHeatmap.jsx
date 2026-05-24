@@ -20,7 +20,7 @@ export default function QueryHeatmap({ heatmapData }) {
   const max = Math.max(...heatmapData.flat(), 1);
 
   return (
-    <div className="bg-[#0c101b] border border-[#1e293b] rounded-lg p-5 shadow-sm h-full">
+    <div className="bg-white dark:bg-[#0c101b] border border-slate-200 dark:border-[#1e293b] rounded-lg p-5 shadow-sm h-full">
 
       {/* Header */}
       <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
