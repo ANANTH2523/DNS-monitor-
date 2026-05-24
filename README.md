@@ -15,12 +15,17 @@ Microservices frequently suffer from transient network hiccups, silent DNS timeo
 This process is highly invasive, slow, and hard to maintain across dozens of different microservices and programming languages.
 
 ### The Solution
-**DNS Sentinel** runs as a zero-code sidecar container in the same Kubernetes Pod, sharing the network namespace.
+**DNS Sentinel** is comprised of two core components: a zero-code Sidecar for infrastructure monitoring, and a rich, interactive Dashboard for real-time observability.
+
+**1. Zero-Code Kubernetes Sidecar**
 * **No Code Intrusion**: It uses `libpcap` to transparently sniff packet traffic on the shared `eth0` interface, intercepting all DNS queries and responses (`port 53`).
 * **Packet-Level Transaction Matching**: Using standard DNS 16-bit Transaction IDs (`dns.ID`), it matches queries to responses to calculate precise network-level lookup latency.
 * **Smart Filtering**: Automatically filters out internal Kubernetes search path lookups (e.g., `.svc.cluster.local`) to highlight actual application dependencies.
-* **Instant Failure Visibility**: It immediately parses responses, outputs clean logs for resolution issues, and tracks occurrences without touching a single line of your application code.
-* **Standardized Telemetry**: It exposes a Prometheus metrics endpoint to centralize DNS performance data.
+
+**2. Modern Observability Dashboard**
+* **Real-time Incident Streaming**: The dashboard connects via WebSockets to stream exact DNS resolution failures and latency spikes instantly.
+* **Premium UX/UI**: Beautiful, responsive layout with **Light / Dark mode** seamlessly toggled via context states.
+* **Centralized Auth & Analytics**: Includes a secure authentication flow and a unified control pane for monitoring overall cluster health.
 
 ---
 
@@ -112,3 +117,16 @@ And view them in your browser or curl:
 ```bash
 curl http://localhost:2112/metrics
 ```
+
+---
+
+## 📅 Changelog & Recent Fixes
+
+### Stability & Maintainability Improvements
+- **Resolved Frontend Crashes**: Hardened the React application to handle asynchronous WebSocket data initialization gracefully, eliminating blank screens caused by undefined `floatingAlerts` variables.
+- **Fixed Database Locking**: Resolved concurrency issues and SQLite database locking (`attempt to write a readonly database (1032)`) within the Go backend during Git rebases and task restarts.
+- **Strict Linting Enforcement**: Refactored the dashboard components for robust maintainability. Removed dozens of unused `React` imports, fixed strict `useCallback` and `useEffect` dependency violations, and cleaned up legacy shim helpers for a completely warning-free production build.
+
+### Feature Enhancements
+- **Light / Dark Mode**: Integrated a fully responsive system-level Light and Dark mode using Tailwind CSS, a custom `ThemeContext`, and Lucide `Sun`/`Moon` icons.
+- **Seamless Navigation**: Improved user flow across the Auth, Pitch, and Dashboard pages. Users can now easily click the "DNS Sentinel" logo to navigate back home, and the interactive flow elegantly directs unauthenticated users through a demo experience or the main login process.
