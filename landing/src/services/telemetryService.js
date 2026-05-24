@@ -11,10 +11,10 @@ const SEED_THREATS   = [
   { id: 'inc-1', type: 'critical', title: 'Suspicious Tunneling', desc: 'High volume of TXT records to unknown domain', source: 'auth-manager-3b2', ts: new Date().toISOString().split('T')[1].slice(0, 8) }
 ];
 const SEED_PODS      = [
-  { id: 'pod-1', name: 'payment-service-6f8', namespace: 'production', status: 'Running', queries: 1420 },
-  { id: 'pod-2', name: 'auth-manager-3b2', namespace: 'production', status: 'Running', queries: 840 },
-  { id: 'pod-3', name: 'inventory-worker-9x1', namespace: 'production', status: 'Warning', queries: 120 },
-  { id: 'pod-4', name: 'redis-cache-main', namespace: 'infrastructure', status: 'Running', queries: 2500 }
+  { id: 'pod-1', name: 'payment-service-6f8', namespace: 'production', status: 'Running', dnsQueries: 1420, cpu: '45%', mem: '1.2Gi' },
+  { id: 'pod-2', name: 'auth-manager-3b2', namespace: 'production', status: 'Running', dnsQueries: 840, cpu: '22%', mem: '512Mi' },
+  { id: 'pod-3', name: 'inventory-worker-9x1', namespace: 'production', status: 'Warning', dnsQueries: 120, cpu: '88%', mem: '2.1Gi' },
+  { id: 'pod-4', name: 'redis-cache-main', namespace: 'infrastructure', status: 'Running', dnsQueries: 2500, cpu: '15%', mem: '8Gi' }
 ];
 
 function generateHeatmapData() {
