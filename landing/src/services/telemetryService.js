@@ -1,234 +1,243 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import * as ws from './wsService';
 
-// ─── INITIAL STATIC BASELINE DATA ─────────────────────────────────────────────
-
-const INITIAL_LOGS = [
-  { id: 1,  ts: '16:11:15', namespace: 'production',  pod: 'payment-service-6f8', domain: 'api.stripe.com',                      type: 'A',    latency: 12,   rcode: 'NOERROR',  status: 'OK'    },
-  { id: 2,  ts: '16:11:12', namespace: 'production',  pod: 'payment-service-6f8', domain: 'broken-api.internal.local',           type: 'A',    latency: 3514, rcode: 'SERVFAIL', status: 'ERROR' },
-  { id: 3,  ts: '16:11:10', namespace: 'default',     pod: 'frontend-app-7f5',    domain: 'google.com',                          type: 'AAAA', latency: 4,    rcode: 'NOERROR',  status: 'OK'    },
-  { id: 4,  ts: '16:11:08', namespace: 'default',     pod: 'frontend-app-7f5',    domain: 'slack.com',                           type: 'A',    latency: 18,   rcode: 'NOERROR',  status: 'OK'    },
-  { id: 5,  ts: '16:11:05', namespace: 'kube-system', pod: 'coredns-5f82',        domain: 'kubernetes.default.svc.cluster.local',type: 'A',    latency: 1,    rcode: 'NOERROR',  status: 'OK'    },
-  { id: 6,  ts: '16:11:02', namespace: 'production',  pod: 'auth-manager-3b2',    domain: 'aws.amazon.com',                      type: 'A',    latency: 15,   rcode: 'NOERROR',  status: 'OK'    },
-  { id: 7,  ts: '16:10:58', namespace: 'production',  pod: 'payment-service-6f8', domain: 'suspicious-payload-data.xyz',         type: 'TXT',  latency: 503,  rcode: 'NXDOMAIN', status: 'ERROR' },
-  { id: 8,  ts: '16:10:55', namespace: 'monitoring',  pod: 'prometheus-k8s-0',    domain: 'grafana.com',                         type: 'A',    latency: 22,   rcode: 'NOERROR',  status: 'OK'    },
-  { id: 9,  ts: '16:10:51', namespace: 'default',     pod: 'frontend-app-7f5',    domain: 'github.com',                          type: 'A',    latency: 9,    rcode: 'NOERROR',  status: 'OK'    },
+// ─── Static initial data (shown before any real events arrive) ─────────────────
+const SEED_LOGS = [
+  { id: 1,  ts: '16:11:15', namespace: 'production',  pod: 'payment-svc-6f8', domain: 'api.stripe.com',                 type: 'A',    latency: 12,   rcode: 'NOERROR',  status: 'OK'    },
+  { id: 2,  ts: '16:11:12', namespace: 'production',  pod: 'payment-svc-6f8', domain: 'broken-api.internal.local',      type: 'A',    latency: 3514, rcode: 'SERVFAIL', status: 'ERROR' },
+  { id: 3,  ts: '16:11:10', namespace: 'default',     pod: 'frontend-9d1',    domain: 'google.com',                     type: 'AAAA', latency: 4,    rcode: 'NOERROR',  status: 'OK'    },
+  { id: 4,  ts: '16:11:08', namespace: 'default',     pod: 'frontend-9d1',    domain: 'slack.com',                      type: 'A',    latency: 18,   rcode: 'NOERROR',  status: 'OK'    },
+  { id: 5,  ts: '16:11:05', namespace: 'kube-system', pod: 'coredns-5f82',    domain: 'kubernetes.default.svc.cluster', type: 'A',    latency: 1,    rcode: 'NOERROR',  status: 'OK'    },
 ];
 
-const INITIAL_INCIDENTS = [
-  { id: 'inc-1', ts: '16:09:42', title: 'Latency Threshold Breached',  level: 'warning',  desc: 'p99 latency reached 3514ms on broken-api.internal.local query targets.',              service: 'payment-service-6f8' },
-  { id: 'inc-2', ts: '16:08:15', title: 'NXDOMAIN Failure Burst',      level: 'critical', desc: 'Error resolve burst (48% failures) captured on suspicious-payload-data.xyz.',         service: 'payment-service-6f8' },
-  { id: 'inc-3', ts: '16:06:10', title: 'CoreDNS Upstream Timeout',    level: 'warning',  desc: 'CoreDNS upstream 8.8.8.8 responded with latency >2000ms during resolution.',          service: 'coredns-5f82'        },
+const SEED_INCIDENTS = [
+  { id: 'inc-1', ts: '16:09:42', title: 'Latency Threshold Breached', level: 'warning',  desc: 'p99 latency reached 3514ms on broken-api.internal.local.', service: 'payment-svc-6f8' },
+  { id: 'inc-2', ts: '16:08:15', title: 'NXDOMAIN Burst Detected',    level: 'critical', desc: 'Error burst (48%) on suspicious-payload-data.xyz.',         service: 'payment-svc-6f8' },
 ];
 
-const INITIAL_THREATS = [
-  { id: 'threat-1', type: 'critical', title: 'Potential DNS Tunneling Behavior',    desc: 'Anomalous base64 payload labels in query transactions detected on payment pod.', source: '10.244.0.5',  ts: '16:08:02' },
-  { id: 'threat-2', type: 'warning',  title: 'High DNS Failure Rate Detected',      desc: 'NXDOMAIN spike (45% error rate) on external DNS resolver searches.',            source: '10.244.0.7',  ts: '16:07:45' },
+const SEED_THREATS = [
+  { id: 'th-1', type: 'critical', title: 'Potential DNS Tunneling',    desc: 'Anomalous base64 labels in TXT transactions.', source: '10.244.0.5', ts: '16:08:02' },
+  { id: 'th-2', type: 'warning',  title: 'High DNS Failure Rate',      desc: 'NXDOMAIN spike (45% error rate) on external DNS.', source: '10.244.0.7', ts: '16:07:45' },
 ];
 
-const INITIAL_PODS = [
-  { id: 'pod-1', name: 'payment-service-6f8b4d', namespace: 'production',  status: 'Running',           restarts: 0,  age: '14d', dnsQueries: 1842, cpu: '42%', mem: '318Mi' },
-  { id: 'pod-2', name: 'frontend-app-7f5c9a',   namespace: 'default',      status: 'Running',           restarts: 0,  age: '14d', dnsQueries: 924,  cpu: '18%', mem: '128Mi' },
-  { id: 'pod-3', name: 'auth-manager-3b2e1f',   namespace: 'production',   status: 'Running',           restarts: 1,  age: '7d',  dnsQueries: 556,  cpu: '31%', mem: '256Mi' },
-  { id: 'pod-4', name: 'coredns-5f82bc',        namespace: 'kube-system',  status: 'Running',           restarts: 0,  age: '21d', dnsQueries: 412,  cpu: '8%',  mem: '54Mi'  },
-  { id: 'pod-5', name: 'prometheus-k8s-0',      namespace: 'monitoring',   status: 'Running',           restarts: 0,  age: '14d', dnsQueries: 287,  cpu: '12%', mem: '512Mi' },
-  { id: 'pod-6', name: 'api-gateway-8c3a2b',    namespace: 'production',   status: 'Warning',           restarts: 3,  age: '2d',  dnsQueries: 743,  cpu: '78%', mem: '612Mi' },
-  { id: 'pod-7', name: 'cache-redis-2b1f4c',    namespace: 'default',      status: 'Running',           restarts: 0,  age: '14d', dnsQueries: 198,  cpu: '5%',  mem: '96Mi'  },
-  { id: 'pod-8', name: 'worker-batch-9d4e7a',   namespace: 'production',   status: 'CrashLoopBackOff',  restarts: 12, age: '1d',  dnsQueries: 0,    cpu: '0%',  mem: '0Mi'   },
+const SEED_PODS = [
+  { id:'p1', name:'payment-svc-6f8b4d',  namespace:'production',  status:'Running',          restarts:0,  dnsQueries:1842, cpu:'42%', mem:'318Mi' },
+  { id:'p2', name:'frontend-app-7f5c9a', namespace:'default',      status:'Running',          restarts:0,  dnsQueries:924,  cpu:'18%', mem:'128Mi' },
+  { id:'p3', name:'auth-mgr-3b2e1f',     namespace:'production',   status:'Running',          restarts:1,  dnsQueries:556,  cpu:'31%', mem:'256Mi' },
+  { id:'p4', name:'coredns-5f82bc',      namespace:'kube-system',  status:'Running',          restarts:0,  dnsQueries:412,  cpu:'8%',  mem:'54Mi'  },
+  { id:'p5', name:'api-gateway-8c3a2b',  namespace:'production',   status:'Warning',          restarts:3,  dnsQueries:743,  cpu:'78%', mem:'612Mi' },
+  { id:'p6', name:'worker-batch-9d4e7a', namespace:'production',   status:'CrashLoopBackOff', restarts:12, dnsQueries:0,    cpu:'0%',  mem:'0Mi'   },
 ];
 
-const DOMAIN_POOL = [
-  'api.stripe.com', 'google.com', 'slack.com', 'aws.amazon.com', 'github.com',
-  'broken-api.internal.local', 'suspicious-payload-data.xyz', 'grafana.com', 'openai.com',
-];
-const NAMESPACE_POOL = ['production', 'default', 'kube-system', 'monitoring'];
-const RECORD_TYPES   = ['A', 'AAAA', 'TXT', 'MX'];
-
-// Build a realistic 7-day × 24-hour query volume heatmap
 function generateHeatmapData() {
   return Array.from({ length: 7 }, (_, d) =>
     Array.from({ length: 24 }, (_, h) => {
-      const isWeekday      = d >= 1 && d <= 5;
-      const isBusinessHour = h >= 8  && h <= 19;
-      if (isWeekday && isBusinessHour) return Math.floor(Math.random() * 380 + 70);
-      if (isWeekday)                   return Math.floor(Math.random() * 80  + 10);
+      const biz = d >= 1 && d <= 5 && h >= 8 && h <= 19;
+      if (biz) return Math.floor(Math.random() * 380 + 70);
       return Math.floor(Math.random() * 50 + 5);
     })
   );
 }
 
-// ─── MAIN HOOK ───────────────────────────────────────────────────────────────
+// ─── DEMO-MODE simulation (no backend) ─────────────────────────────────────────
+const DEMO_DOMAINS = ['api.stripe.com','google.com','slack.com','aws.amazon.com','github.com',
+                      'broken-api.internal.local','grafana.com','openai.com'];
+const DEMO_NS      = ['production','default','kube-system','monitoring'];
+const DEMO_PODS    = ['payment-svc-6f8','frontend-9d1','auth-mgr-3b2','coredns-5f82'];
+const TYPES        = ['A','AAAA','TXT','MX'];
 
-export function useTelemetry() {
-  // Core metrics
-  const [connectionStatus, setConnectionStatus] = useState('connected');
-  const [totalQueries,     setTotalQueries]     = useState(512408);
-  const [failures,         setFailures]         = useState(8204);
-  const [healthScore,      setHealthScore]       = useState(99.4);
-  const [latencyPercentiles, setLatencyPercentiles] = useState({ p50: 8.4, p95: 14.2, p99: 22.8 });
-  const [throughput,       setThroughput]       = useState(2.1);
-  const [cacheHitRate,     setCacheHitRate]     = useState(84.2);
-  const [threatScore,      setThreatScore]      = useState(12);
+function genDemoEvent(id) {
+  const isErr  = Math.random() < 0.12;
+  const domain = isErr && Math.random() > 0.5
+    ? 'broken-api.internal.local'
+    : DEMO_DOMAINS[Math.floor(Math.random() * DEMO_DOMAINS.length)];
+  const spike  = Math.random() > 0.95;
+  const base   = 4 + Math.random() * 10;
+  const latency = Math.round(spike ? base * 30 + Math.random() * 800 : base);
+  const rcode  = isErr ? (domain.includes('broken') ? 'SERVFAIL' : 'NXDOMAIN') : 'NOERROR';
+  return {
+    id, ts: new Date().toLocaleTimeString('en-GB'),
+    namespace: DEMO_NS[Math.floor(Math.random() * DEMO_NS.length)],
+    pod: DEMO_PODS[Math.floor(Math.random() * DEMO_PODS.length)],
+    domain, type: TYPES[Math.floor(Math.random() * TYPES.length)],
+    latency, rcode, status: isErr ? 'ERROR' : 'OK', spike,
+  };
+}
 
-  // Data streams
-  const [logs,       setLogs]       = useState(INITIAL_LOGS);
-  const [incidents,  setIncidents]  = useState(INITIAL_INCIDENTS);
-  const [threats,    setThreats]    = useState(INITIAL_THREATS);
-  const [pods,       setPods]       = useState(INITIAL_PODS);
+// ─── MAIN HOOK ──────────────────────────────────────────────────────────────────
+// clusterId + token: when provided, uses real WebSocket backend.
+// Otherwise falls back to demo simulation.
 
-  // Chart histories
-  const [latencyHistory,   setLatencyHistory]   = useState([12.4, 14.8, 13.2, 15.6, 22.1, 11.8, 14.2, 13.9, 16.5, 28.4, 14.8, 12.1, 13.6, 14.2, 15.8]);
-  const [qpsHistory,       setQpsHistory]       = useState(() => Array.from({ length: 30 }, () => parseFloat((1.2 + Math.random() * 1.8).toFixed(1))));
+export function useTelemetry(clusterId = null, token = null) {
+  const isRealMode = !!(clusterId && token);
 
-  // Static datasets (generated once)
-  const [recordTypeStats, setRecordTypeStats] = useState({ A: 58, AAAA: 22, TXT: 12, MX: 8 });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const [heatmapData] = useState(() => generateHeatmapData());
+  // ── Connection state ──────────────────────────────────────────────────────
+  const [connectionStatus, setConnectionStatus] = useState(
+    isRealMode ? 'connecting' : 'demo'
+  );
 
-  // Toast alerts
+  // ── Core metrics ──────────────────────────────────────────────────────────
+  const [totalQueries,       setTotalQueries]       = useState(0);
+  const [failures,           setFailures]           = useState(0);
+  const [healthScore,        setHealthScore]        = useState(99.5);
+  const [latencyPercentiles, setLatencyPercentiles] = useState({ p50: 8, p95: 14, p99: 22 });
+  const [throughput,         setThroughput]         = useState(2.1);
+  const [cacheHitRate,       setCacheHitRate]       = useState(84.2);
+  const [threatScore,        setThreatScore]        = useState(5);
+  const [failureRate,        setFailureRate]        = useState(0);
+
+  // ── Data streams ──────────────────────────────────────────────────────────
+  const [logs,       setLogs]       = useState(SEED_LOGS);
+  const [incidents,  setIncidents]  = useState(SEED_INCIDENTS);
+  const [threats,    setThreats]    = useState(SEED_THREATS);
+  const [pods,       setPods]       = useState(SEED_PODS);
+
+  // ── Chart histories ───────────────────────────────────────────────────────
+  const [latencyHistory, setLatencyHistory] = useState(
+    [12, 14, 13, 15, 22, 11, 14, 13, 16, 28, 14, 12, 13, 14, 15]
+  );
+  const [qpsHistory, setQpsHistory] = useState(
+    () => Array.from({ length: 30 }, () => parseFloat((1.2 + Math.random() * 1.8).toFixed(1)))
+  );
+  const [rcodeData, setRcodeData] = useState({ NXDOMAIN: 12, SERVFAIL: 4, REFUSED: 1 });
+  const [heatmapData]             = useState(generateHeatmapData);
   const [floatingAlerts, setFloatingAlerts] = useState([]);
 
-  // ── Floating alert dispatcher ──────────────────────────────────────────────
-  const triggerFloatingAlert = useCallback((type, title, desc) => {
-    const id = Date.now() + Math.random();
-    setFloatingAlerts(prev => [...prev, { id, type, title, desc }]);
-    setTimeout(() => setFloatingAlerts(prev => prev.filter(a => a.id !== id)), 4500);
-  }, []);
+  const counterRef = useRef(SEED_LOGS.length + 1);
 
-  // ── Connection simulation ─────────────────────────────────────────────────
-  const forceDisconnect = useCallback(() => setConnectionStatus('disconnected'), []);
-  const manualReconnect = useCallback(() => {
-    setConnectionStatus('connecting');
-    setTimeout(() => setConnectionStatus('connected'), 1500);
-  }, []);
+  // ── Floating alert helper ─────────────────────────────────────────────────
+  function triggerAlert(level, title, desc) {
+    const id = Date.now();
+    setFloatingAlerts(prev => [...prev, { id, level, title, desc }].slice(-3));
+    setTimeout(() => setFloatingAlerts(prev => prev.filter(a => a.id !== id)), 6000);
+  }
 
-  // ── Live polling interval ─────────────────────────────────────────────────
+  // ── Apply one DNS event to all state ─────────────────────────────────────
+  function applyEvent(event) {
+    setLogs(prev => [event, ...prev].slice(0, 100));
+    setTotalQueries(n => n + 1);
+    if (event.status === 'ERROR') {
+      setFailures(n => n + 1);
+      setRcodeData(prev => ({ ...prev, [event.rcode]: (prev[event.rcode] || 0) + 1 }));
+    }
+    if (event.spike) {
+      setLatencyHistory(h => [...h.slice(-14), event.latency]);
+    } else {
+      setLatencyHistory(h => [...h.slice(-14), event.latency]);
+    }
+    setQpsHistory(q => [...q.slice(-29), parseFloat((1 + Math.random()).toFixed(1))]);
+  }
+
+  // ── Apply incoming metrics snapshot from server ───────────────────────────
+  function applyMetrics(m) {
+    if (m.p50)         setLatencyPercentiles({ p50: m.p50, p95: m.p95, p99: m.p99 });
+    if (m.healthScore) setHealthScore(m.healthScore);
+    if (m.cacheHitRate)setCacheHitRate(m.cacheHitRate);
+    if (m.failureRate) setFailureRate(m.failureRate);
+    if (m.throughput)  setThroughput(m.throughput);
+  }
+
+  // ── REAL MODE: WebSocket subscriptions ───────────────────────────────────
   useEffect(() => {
-    if (connectionStatus !== 'connected') return;
+    if (!isRealMode) return;
 
-    const interval = setInterval(() => {
-      const ts = new Date().toTimeString().split(' ')[0];
+    ws.connect(token, clusterId);
 
-      // 1. Tick totals
-      const newQ  = Math.floor(Math.random() * 4) + 1;
-      const isErr = Math.random() > 0.88;
-      setTotalQueries(prev => prev + newQ);
-      if (isErr) setFailures(prev => prev + 1);
+    const unsubs = [
+      ws.onStatus(status => setConnectionStatus(status)),
 
-      // 2. Health & cache
-      setHealthScore(prev => parseFloat(Math.min(Math.max(prev + (Math.random() - 0.5) * 0.04, 97.5), 99.9).toFixed(2)));
-      setCacheHitRate(prev => parseFloat(Math.min(99, Math.max(70, prev + (Math.random() - 0.5) * 0.5)).toFixed(1)));
+      ws.on('snapshot', payload => {
+        // Initial data burst from server
+        if (payload.events?.length)    setLogs(payload.events);
+        if (payload.incidents?.length) setIncidents(payload.incidents);
+        if (payload.metrics)           applyMetrics(payload.metrics);
+        const total = payload.events?.length || 0;
+        setTotalQueries(total);
+        setFailures(payload.events?.filter(e => e.status === 'ERROR').length || 0);
+      }),
 
-      // 3. Latency
-      const p50Val  = parseFloat((6.2  + Math.random() * 3).toFixed(1));
-      const p95Val  = parseFloat((12   + Math.random() * 4).toFixed(1));
-      let   p99Val  = parseFloat((20   + Math.random() * 6).toFixed(1));
-      const hasSpike = Math.random() > 0.94;
-      if (hasSpike) p99Val = parseFloat((400 + Math.random() * 150).toFixed(1));
-      setLatencyPercentiles({ p50: p50Val, p95: p95Val, p99: p99Val });
-      setLatencyHistory(prev => [...prev.slice(1), p95Val]);
+      ws.on('dns_query', event => applyEvent(event)),
 
-      // 4. Throughput + QPS sparkline
-      const tpVal = parseFloat((1.5 + Math.random() * 1.6).toFixed(1));
-      setThroughput(tpVal);
-      setQpsHistory(prev => [...prev.slice(1), tpVal]);
+      ws.on('metrics', m => applyMetrics(m)),
 
-      // 5. Record type distribution (slight drift)
-      if (Math.random() > 0.7) {
-        setRecordTypeStats(prev => ({
-          A:    Math.max(40, Math.min(75, prev.A    + Math.floor((Math.random() - 0.5) * 3))),
-          AAAA: Math.max(10, Math.min(35, prev.AAAA + Math.floor((Math.random() - 0.5) * 2))),
-          TXT:  Math.max(5,  Math.min(20, prev.TXT  + Math.floor((Math.random() - 0.5) * 2))),
-          MX:   Math.max(2,  Math.min(15, prev.MX   + Math.floor((Math.random() - 0.5) * 1))),
-        }));
-      }
+      ws.on('incident', incident => {
+        setIncidents(prev => [incident, ...prev].slice(0, 50));
+        triggerAlert(incident.level, incident.title, incident.desc);
+        if (incident.level === 'critical') {
+          setThreats(prev => [{
+            id:     incident.id,
+            type:   'critical',
+            title:  incident.title,
+            desc:   incident.desc,
+            source: incident.service,
+            ts:     incident.ts,
+          }, ...prev].slice(0, 20));
+        }
+      }),
+    ];
 
-      // 6. New DNS log entry
-      const randomDom  = DOMAIN_POOL[Math.floor(Math.random() * DOMAIN_POOL.length)];
-      const randomNs   = NAMESPACE_POOL[Math.floor(Math.random() * NAMESPACE_POOL.length)];
-      const randomType = RECORD_TYPES[Math.floor(Math.random() * RECORD_TYPES.length)];
-      const isLogErr   = randomDom.includes('broken') || randomDom.includes('suspicious');
-      const newLog = {
-        id:        Date.now() + Math.random(),
-        ts,
-        namespace: randomNs,
-        pod:       randomNs === 'production' ? 'payment-service-6f8' : 'frontend-app-7f5',
-        domain:    randomDom,
-        type:      randomType,
-        latency:   isLogErr ? (randomDom.startsWith('broken') ? 3500 : 503) : Math.floor(Math.random() * 18) + 4,
-        rcode:     isLogErr ? (randomDom.startsWith('broken') ? 'SERVFAIL' : 'NXDOMAIN') : 'NOERROR',
-        status:    isLogErr ? 'ERROR' : 'OK',
-      };
-      setLogs(prev => [newLog, ...prev].slice(0, 100));
+    return () => {
+      unsubs.forEach(fn => fn());
+      ws.disconnect();
+    };
+  }, [clusterId, token]);  // eslint-disable-line
 
-      // 7. Latency spike → incident
-      if (hasSpike) {
-        const inc = {
-          id:      `inc-${Date.now()}`,
-          ts,
-          title:   'Latency Threshold Breached',
-          level:   'warning',
-          desc:    `eBPF flagged p99 outlier spike of ${p99Val}ms resolving ${randomDom}.`,
-          service: newLog.pod,
-        };
-        setIncidents(prev => [inc, ...prev].slice(0, 50));
-        triggerFloatingAlert('warning', inc.title, inc.desc);
-      }
+  // ── DEMO MODE: local simulation ───────────────────────────────────────────
+  useEffect(() => {
+    if (isRealMode) return;
 
-      // 8. Occasional security threat
-      if (Math.random() > 0.96) {
-        const pool = [
-          { type: 'critical', title: 'Possible DNS Tunneling Suspected',  desc: 'Outbound DNS exfiltration detected via long base64 label labels.',           source: '10.244.0.14' },
-          { type: 'warning',  title: 'Outbound DNS Query Burst Detected', desc: 'Unusual resolver outbound count (640 QPS) matches DDoS fingerprint.',         source: '10.244.0.5'  },
+    setConnectionStatus('demo');
+    setTotalQueries(512408);
+    setFailures(8204);
+    setHealthScore(99.4);
+    setLatencyPercentiles({ p50: 8.4, p95: 14.2, p99: 22.8 });
+    setThroughput(2.1);
+    setCacheHitRate(84.2);
+
+    const tick = setInterval(() => {
+      const id    = counterRef.current++;
+      const event = genDemoEvent(id);
+      applyEvent(event);
+
+      if (Math.random() < 0.015) {
+        const titles = [
+          ['warning',  'Latency Threshold Breached', 'p99 spike above 1500ms detected.'],
+          ['critical', 'NXDOMAIN Burst Detected',    'Failure burst on external resolver.'],
+          ['info',     'High Query Volume',           'DNS throughput 3× above baseline.'],
         ];
-        const st       = pool[Math.floor(Math.random() * pool.length)];
-        const newThreat = { id: Date.now(), ...st, ts };
-        setThreats(prev => [newThreat, ...prev].slice(0, 10));
-        triggerFloatingAlert(st.type, st.title, st.desc);
+        const [level, title, desc] = titles[Math.floor(Math.random() * titles.length)];
+        const inc = { id: `inc-${id}`, ts: new Date().toLocaleTimeString('en-GB'), title, level, desc, service: event.pod };
+        setIncidents(prev => [inc, ...prev].slice(0, 50));
+        triggerAlert(level, title, desc);
       }
 
-      // 9. Pod DNS query counters
-      if (Math.random() > 0.5) {
-        setPods(prev =>
-          prev.map(p => ({
-            ...p,
-            dnsQueries: p.status !== 'CrashLoopBackOff'
-              ? p.dnsQueries + Math.floor(Math.random() * 4)
-              : p.dnsQueries,
-          }))
-        );
-      }
+      setTotalQueries(n => n + 1);
+      setHealthScore(s => parseFloat(Math.max(94, Math.min(99.9, s + (Math.random() - 0.52) * 0.3)).toFixed(1)));
+      setLatencyPercentiles(prev => ({
+        p50: parseFloat(Math.max(3,  Math.min(40,  prev.p50 + (Math.random() - 0.5) * 1)).toFixed(1)),
+        p95: parseFloat(Math.max(8,  Math.min(80,  prev.p95 + (Math.random() - 0.5) * 2)).toFixed(1)),
+        p99: parseFloat(Math.max(15, Math.min(200, prev.p99 + (Math.random() - 0.5) * 3)).toFixed(1)),
+      }));
+      setCacheHitRate(r => parseFloat(Math.max(70, Math.min(99, r + (Math.random() - 0.5) * 0.5)).toFixed(1)));
     }, 2500);
 
-    return () => clearInterval(interval);
-  }, [connectionStatus, triggerFloatingAlert]);
+    return () => clearInterval(tick);
+  }, [isRealMode]); // eslint-disable-line
 
   return {
+    // Status
     connectionStatus,
-    metrics: {
-      totalQueries,
-      failures,
-      healthScore,
-      latencyPercentiles,
-      throughput,
-      threatScore,
-      cacheHitRate,
-      failureRate: parseFloat(((failures / Math.max(1, totalQueries)) * 100).toFixed(2)),
-    },
-    logs,
-    incidents,
-    threats,
-    pods,
-    latencyHistory,
-    qpsHistory,
-    recordTypeStats,
-    heatmapData,
-    setThreats,
-    setThreatScore,
-    setHealthScore,
-    forceDisconnect,
-    manualReconnect,
+    isRealMode,
+    // Metrics
+    totalQueries, failures, healthScore, latencyPercentiles,
+    throughput, cacheHitRate, threatScore, failureRate,
+    // Streams
+    logs, incidents, threats, pods,
+    // Charts
+    latencyHistory, qpsHistory, rcodeData, heatmapData,
+    // Alerts
     floatingAlerts,
-    setFloatingAlerts,
-    triggerFloatingAlert,
+    // Setters (for export, quarantine etc.)
+    setIncidents, setThreats,
   };
 }

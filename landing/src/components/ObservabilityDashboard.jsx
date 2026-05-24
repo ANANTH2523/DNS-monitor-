@@ -26,33 +26,53 @@ const TABS = [
   { id: 'infra',     label: 'Infrastructure',  Icon: Server     },
 ];
 
-export default function ObservabilityDashboard() {
+export default function ObservabilityDashboard({
+  clusterId     = null,
+  clusterName   = 'Demo Cluster',
+  clusterProfile= 'production',
+  orgName       = 'Demo Org',
+  token         = null,
+  isDemoMode    = true,
+  backendOk     = false,
+  onGoToAuth    = null,
+}) {
   const [showIntro,         setShowIntro]         = useState(true);
   const [activeTab,         setActiveTab]         = useState('overview');
   const [isRefreshing,      setIsRefreshing]      = useState(false);
   const [selectedTimeRange, setSelectedTimeRange] = useState('5m');
   const [mobileMenuOpen,    setMobileMenuOpen]    = useState(false);
 
-  // Telemetry hook
+  // Telemetry hook — real WebSocket when clusterId+token are provided
   const {
     connectionStatus,
-    metrics,
+    isRealMode,
+    totalQueries,
+    failures,
+    healthScore,
+    latencyPercentiles,
+    throughput,
+    cacheHitRate,
+    threatScore,
     logs,
     incidents,
     threats,
     pods,
     latencyHistory,
     qpsHistory,
-    recordTypeStats,
+    rcodeData,
     heatmapData,
-    setThreats,
-    setHealthScore,
-    forceDisconnect,
-    manualReconnect,
     floatingAlerts,
-    setFloatingAlerts,
-    triggerFloatingAlert,
-  } = useTelemetry();
+    setIncidents,
+    setThreats,
+  } = useTelemetry(clusterId, token);
+
+  // Compatibility shim: build metrics object from flat values
+  const metrics = { totalQueries, failures, healthScore, latencyPercentiles, throughput, cacheHitRate, threatScore };
+
+  // Shim helpers that old code used
+  const setHealthScore   = () => {};
+  const triggerFloatingAlert = () => {};
+  const setFloatingAlerts    = () => {};
 
   // Mitigation states
   const [remediatingThreatId, setRemediatingThreatId] = useState(null);
