@@ -8,7 +8,7 @@ export default function LightweightIntro({ onComplete }) {
       onComplete();
     }, 2400);
     return () => clearTimeout(timer);
-  }, [onComplete]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="fixed inset-0 bg-[#06080d] z-50 flex flex-col items-center justify-center font-mono select-none">

@@ -1,72 +1,30 @@
 import { useState, useEffect, useRef } from 'react';
 import * as ws from './wsService';
 
-// ─── Static initial data (shown before any real events arrive) ─────────────────
-const SEED_LOGS = [
-  { id: 1,  ts: '16:11:15', namespace: 'production',  pod: 'payment-svc-6f8', domain: 'api.stripe.com',                 type: 'A',    latency: 12,   rcode: 'NOERROR',  status: 'OK'    },
-  { id: 2,  ts: '16:11:12', namespace: 'production',  pod: 'payment-svc-6f8', domain: 'broken-api.internal.local',      type: 'A',    latency: 3514, rcode: 'SERVFAIL', status: 'ERROR' },
-  { id: 3,  ts: '16:11:10', namespace: 'default',     pod: 'frontend-9d1',    domain: 'google.com',                     type: 'AAAA', latency: 4,    rcode: 'NOERROR',  status: 'OK'    },
-  { id: 4,  ts: '16:11:08', namespace: 'default',     pod: 'frontend-9d1',    domain: 'slack.com',                      type: 'A',    latency: 18,   rcode: 'NOERROR',  status: 'OK'    },
-  { id: 5,  ts: '16:11:05', namespace: 'kube-system', pod: 'coredns-5f82',    domain: 'kubernetes.default.svc.cluster', type: 'A',    latency: 1,    rcode: 'NOERROR',  status: 'OK'    },
-];
-
+// ─── INITIAL STATIC DATA (empty until WS snapshot arrives) ─────────────────
+const SEED_LOGS      = [];
 const SEED_INCIDENTS = [
-  { id: 'inc-1', ts: '16:09:42', title: 'Latency Threshold Breached', level: 'warning',  desc: 'p99 latency reached 3514ms on broken-api.internal.local.', service: 'payment-svc-6f8' },
-  { id: 'inc-2', ts: '16:08:15', title: 'NXDOMAIN Burst Detected',    level: 'critical', desc: 'Error burst (48%) on suspicious-payload-data.xyz.',         service: 'payment-svc-6f8' },
+  { id: 'inc-1', ts: new Date().toISOString().split('T')[1].slice(0, 8), level: 'critical', title: 'Suspicious Tunneling', desc: 'High volume of TXT records to unknown domain', service: 'auth-manager-3b2' },
+  { id: 'inc-2', ts: new Date(Date.now() - 120000).toISOString().split('T')[1].slice(0, 8), level: 'warning', title: 'NXDOMAIN Storm', desc: 'Elevated rate of failed resolutions', service: 'payment-service-6f8' }
 ];
-
-const SEED_THREATS = [
-  { id: 'th-1', type: 'critical', title: 'Potential DNS Tunneling',    desc: 'Anomalous base64 labels in TXT transactions.', source: '10.244.0.5', ts: '16:08:02' },
-  { id: 'th-2', type: 'warning',  title: 'High DNS Failure Rate',      desc: 'NXDOMAIN spike (45% error rate) on external DNS.', source: '10.244.0.7', ts: '16:07:45' },
+const SEED_THREATS   = [
+  { id: 'inc-1', type: 'critical', title: 'Suspicious Tunneling', desc: 'High volume of TXT records to unknown domain', source: 'auth-manager-3b2', ts: new Date().toISOString().split('T')[1].slice(0, 8) }
 ];
-
-const SEED_PODS = [
-  { id:'p1', name:'payment-svc-6f8b4d',  namespace:'production',  status:'Running',          restarts:0,  dnsQueries:1842, cpu:'42%', mem:'318Mi' },
-  { id:'p2', name:'frontend-app-7f5c9a', namespace:'default',      status:'Running',          restarts:0,  dnsQueries:924,  cpu:'18%', mem:'128Mi' },
-  { id:'p3', name:'auth-mgr-3b2e1f',     namespace:'production',   status:'Running',          restarts:1,  dnsQueries:556,  cpu:'31%', mem:'256Mi' },
-  { id:'p4', name:'coredns-5f82bc',      namespace:'kube-system',  status:'Running',          restarts:0,  dnsQueries:412,  cpu:'8%',  mem:'54Mi'  },
-  { id:'p5', name:'api-gateway-8c3a2b',  namespace:'production',   status:'Warning',          restarts:3,  dnsQueries:743,  cpu:'78%', mem:'612Mi' },
-  { id:'p6', name:'worker-batch-9d4e7a', namespace:'production',   status:'CrashLoopBackOff', restarts:12, dnsQueries:0,    cpu:'0%',  mem:'0Mi'   },
+const SEED_PODS      = [
+  { id: 'pod-1', name: 'payment-service-6f8', namespace: 'production', status: 'Running', queries: 1420 },
+  { id: 'pod-2', name: 'auth-manager-3b2', namespace: 'production', status: 'Running', queries: 840 },
+  { id: 'pod-3', name: 'inventory-worker-9x1', namespace: 'production', status: 'Warning', queries: 120 },
+  { id: 'pod-4', name: 'redis-cache-main', namespace: 'infrastructure', status: 'Running', queries: 2500 }
 ];
 
 function generateHeatmapData() {
-  return Array.from({ length: 7 }, (_, d) =>
-    Array.from({ length: 24 }, (_, h) => {
-      const biz = d >= 1 && d <= 5 && h >= 8 && h <= 19;
-      if (biz) return Math.floor(Math.random() * 380 + 70);
-      return Math.floor(Math.random() * 50 + 5);
-    })
+  return Array.from({ length: 7 }, () => 
+    Array.from({ length: 24 }, () => Math.floor(Math.random() * 50))
   );
-}
-
-// ─── DEMO-MODE simulation (no backend) ─────────────────────────────────────────
-const DEMO_DOMAINS = ['api.stripe.com','google.com','slack.com','aws.amazon.com','github.com',
-                      'broken-api.internal.local','grafana.com','openai.com'];
-const DEMO_NS      = ['production','default','kube-system','monitoring'];
-const DEMO_PODS    = ['payment-svc-6f8','frontend-9d1','auth-mgr-3b2','coredns-5f82'];
-const TYPES        = ['A','AAAA','TXT','MX'];
-
-function genDemoEvent(id) {
-  const isErr  = Math.random() < 0.12;
-  const domain = isErr && Math.random() > 0.5
-    ? 'broken-api.internal.local'
-    : DEMO_DOMAINS[Math.floor(Math.random() * DEMO_DOMAINS.length)];
-  const spike  = Math.random() > 0.95;
-  const base   = 4 + Math.random() * 10;
-  const latency = Math.round(spike ? base * 30 + Math.random() * 800 : base);
-  const rcode  = isErr ? (domain.includes('broken') ? 'SERVFAIL' : 'NXDOMAIN') : 'NOERROR';
-  return {
-    id, ts: new Date().toLocaleTimeString('en-GB'),
-    namespace: DEMO_NS[Math.floor(Math.random() * DEMO_NS.length)],
-    pod: DEMO_PODS[Math.floor(Math.random() * DEMO_PODS.length)],
-    domain, type: TYPES[Math.floor(Math.random() * TYPES.length)],
-    latency, rcode, status: isErr ? 'ERROR' : 'OK', spike,
-  };
 }
 
 // ─── MAIN HOOK ──────────────────────────────────────────────────────────────────
 // clusterId + token: when provided, uses real WebSocket backend.
-// Otherwise falls back to demo simulation.
 
 export function useTelemetry(clusterId = null, token = null) {
   const isRealMode = !!(clusterId && token);
@@ -100,6 +58,7 @@ export function useTelemetry(clusterId = null, token = null) {
     () => Array.from({ length: 30 }, () => parseFloat((1.2 + Math.random() * 1.8).toFixed(1)))
   );
   const [rcodeData, setRcodeData] = useState({ NXDOMAIN: 12, SERVFAIL: 4, REFUSED: 1 });
+  const [recordTypeStats, setRecordTypeStats] = useState({ A: 1420, AAAA: 310, TXT: 85, MX: 42, CNAME: 120 });
   const [heatmapData]             = useState(generateHeatmapData);
   const [floatingAlerts, setFloatingAlerts] = useState([]);
 
@@ -148,9 +107,10 @@ export function useTelemetry(clusterId = null, token = null) {
 
       ws.on('snapshot', payload => {
         // Initial data burst from server
-        if (payload.events?.length)    setLogs(payload.events);
-        if (payload.incidents?.length) setIncidents(payload.incidents);
-        if (payload.metrics)           applyMetrics(payload.metrics);
+        if (payload.events)    setLogs(payload.events);
+        if (payload.incidents) setIncidents(payload.incidents);
+        setThreats([]); // Clear demo threats
+        if (payload.metrics)   applyMetrics(payload.metrics);
         const total = payload.events?.length || 0;
         setTotalQueries(total);
         setFailures(payload.events?.filter(e => e.status === 'ERROR').length || 0);
@@ -187,41 +147,42 @@ export function useTelemetry(clusterId = null, token = null) {
     if (isRealMode) return;
 
     setConnectionStatus('demo');
-    setTotalQueries(512408);
-    setFailures(8204);
-    setHealthScore(99.4);
-    setLatencyPercentiles({ p50: 8.4, p95: 14.2, p99: 22.8 });
+    setHealthScore(99.5);
     setThroughput(2.1);
     setCacheHitRate(84.2);
 
-    const tick = setInterval(() => {
-      const id    = counterRef.current++;
-      const event = genDemoEvent(id);
-      applyEvent(event);
-
-      if (Math.random() < 0.015) {
-        const titles = [
-          ['warning',  'Latency Threshold Breached', 'p99 spike above 1500ms detected.'],
-          ['critical', 'NXDOMAIN Burst Detected',    'Failure burst on external resolver.'],
-          ['info',     'High Query Volume',           'DNS throughput 3× above baseline.'],
-        ];
-        const [level, title, desc] = titles[Math.floor(Math.random() * titles.length)];
-        const inc = { id: `inc-${id}`, ts: new Date().toLocaleTimeString('en-GB'), title, level, desc, service: event.pod };
-        setIncidents(prev => [inc, ...prev].slice(0, 50));
-        triggerAlert(level, title, desc);
+    const int1 = setInterval(() => {
+      const isErr = Math.random() < 0.05;
+      const ts = new Date().toISOString().split('T')[1].slice(0, 8);
+      const domains = ['api.stripe.com', 'google.com', 'internal.auth.svc', 'db.production.local', 'slack.com'];
+      const domain = domains[Math.floor(Math.random() * domains.length)];
+      
+      const evt = {
+        id: ++counterRef.current,
+        ts,
+        domain,
+        type: Math.random() > 0.3 ? 'A' : 'AAAA',
+        rcode: isErr ? 'SERVFAIL' : 'NOERROR',
+        latency: Math.floor(Math.random() * 20) + (isErr ? 150 : 2),
+        status: isErr ? 'ERROR' : 'OK',
+        namespace: 'production',
+        pod: 'payment-service-6f8',
+      };
+      
+      setLogs(prev => [evt, ...prev].slice(0, 100));
+      setTotalQueries(n => n + 1);
+      
+      if (isErr) {
+        setFailures(n => n + 1);
+        setFailureRate(n => Math.min((n + 0.1).toFixed(1), 5.0));
+        setRcodeData(prev => ({ ...prev, [evt.rcode]: (prev[evt.rcode] || 0) + 1 }));
       }
 
-      setTotalQueries(n => n + 1);
-      setHealthScore(s => parseFloat(Math.max(94, Math.min(99.9, s + (Math.random() - 0.52) * 0.3)).toFixed(1)));
-      setLatencyPercentiles(prev => ({
-        p50: parseFloat(Math.max(3,  Math.min(40,  prev.p50 + (Math.random() - 0.5) * 1)).toFixed(1)),
-        p95: parseFloat(Math.max(8,  Math.min(80,  prev.p95 + (Math.random() - 0.5) * 2)).toFixed(1)),
-        p99: parseFloat(Math.max(15, Math.min(200, prev.p99 + (Math.random() - 0.5) * 3)).toFixed(1)),
-      }));
-      setCacheHitRate(r => parseFloat(Math.max(70, Math.min(99, r + (Math.random() - 0.5) * 0.5)).toFixed(1)));
-    }, 2500);
+      setLatencyHistory(h => [...h.slice(-14), evt.latency]);
+      setQpsHistory(q => [...q.slice(-29), parseFloat((1.5 + Math.random() * 2.5).toFixed(1))]);
+    }, 600);
 
-    return () => clearInterval(tick);
+    return () => clearInterval(int1);
   }, [isRealMode]); // eslint-disable-line
 
   return {
@@ -234,10 +195,15 @@ export function useTelemetry(clusterId = null, token = null) {
     // Streams
     logs, incidents, threats, pods,
     // Charts
-    latencyHistory, qpsHistory, rcodeData, heatmapData,
+    latencyHistory, qpsHistory, rcodeData, heatmapData, recordTypeStats,
     // Alerts
     floatingAlerts,
-    // Setters (for export, quarantine etc.)
     setIncidents, setThreats,
+    // Connection Controls
+    forceDisconnect: () => ws.disconnect(),
+    manualReconnect: () => {
+      setConnectionStatus('connecting');
+      ws.connect(token, clusterId);
+    },
   };
 }

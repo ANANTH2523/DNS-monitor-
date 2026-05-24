@@ -16,7 +16,7 @@ function buildSlices(stats) {
   let cumPct   = 0;
 
   return Object.entries(stats).map(([type, count]) => {
-    const pct    = count / total;
+    const pct    = total === 0 ? 0 : count / total;
     const offset = circ * (1 - cumPct);   // start position
     cumPct      += pct;
     return {

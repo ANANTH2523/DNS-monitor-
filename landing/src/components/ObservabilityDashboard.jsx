@@ -64,10 +64,14 @@ export default function ObservabilityDashboard({
     floatingAlerts,
     setIncidents,
     setThreats,
+    recordTypeStats,
+    forceDisconnect,
+    manualReconnect,
+    failureRate,
   } = useTelemetry(clusterId, token);
 
   // Compatibility shim: build metrics object from flat values
-  const metrics = { totalQueries, failures, healthScore, latencyPercentiles, throughput, cacheHitRate, threatScore };
+  const metrics = { totalQueries, failures, healthScore, latencyPercentiles, throughput, cacheHitRate, threatScore, failureRate };
 
   // Shim helpers that old code used
   const setHealthScore   = () => {};
@@ -309,7 +313,7 @@ export default function ObservabilityDashboard({
       <div className="relative z-10 flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 overflow-y-auto">
 
         {/* Outage skeleton */}
-        {connectionStatus !== 'connected' ? (
+        {connectionStatus === 'error' || connectionStatus === 'disconnected' ? (
           <div className="h-full flex flex-col justify-center items-center py-20 text-center space-y-4">
             <div className="w-12 h-12 rounded-full bg-rose-950/20 border border-rose-500/20 flex items-center justify-center text-rose-500 animate-pulse">
               <WifiOff className="w-6 h-6" />

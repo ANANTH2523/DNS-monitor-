@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"strings"
 	"time"
@@ -41,10 +45,87 @@ func init() {
 	prometheus.MustRegister(dnsQueryDuration)
 }
 
+type IngestPayload struct {
+	Timestamp string `json:"ts"`
+	Namespace string `json:"namespace"`
+	Pod       string `json:"pod"`
+	Domain    string `json:"domain"`
+	Type      string `json:"type"`
+	Latency   int    `json:"latency"`
+	Rcode     string `json:"rcode"`
+	Status    string `json:"status"`
+}
+
+func sendToBackend(backendURL, token string, payload IngestPayload) {
+	b, _ := json.Marshal(payload)
+	req, _ := http.NewRequest("POST", backendURL+"/api/telemetry/ingest", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	client := &http.Client{Timeout: 2 * time.Second}
+	_, err := client.Do(req)
+	if err != nil {
+		// Just log quietly so we don't spam
+		// log.Printf("Failed to push telemetry: %v", err)
+	}
+}
+
+func mockTrafficGenerator(backendURL, token string) {
+	domains := []string{"api.stripe.com", "slack.com", "github.com", "broken-api.internal", "aws.amazon.com"}
+	namespaces := []string{"production", "default", "kube-system"}
+	pods := []string{"payment-service-6f8", "frontend-app-7f5", "auth-manager-3b2", "coredns-5f82"}
+	types := []string{"A", "AAAA", "TXT"}
+
+	log.Println("Starting mock traffic generator...")
+
+	for {
+		time.Sleep(time.Duration(rand.Intn(1000)+500) * time.Millisecond)
+
+		domain := domains[rand.Intn(len(domains))]
+		ns := namespaces[rand.Intn(len(namespaces))]
+		pod := pods[rand.Intn(len(pods))]
+		t := types[rand.Intn(len(types))]
+
+		isError := rand.Float32() < 0.1
+		status := "OK"
+		rcode := "NOERROR"
+		latency := rand.Intn(20) + 5
+
+		if isError {
+			status = "ERROR"
+			if domain == "broken-api.internal" {
+				rcode = "SERVFAIL"
+				latency += rand.Intn(3000)
+			} else {
+				rcode = "NXDOMAIN"
+			}
+		}
+
+		payload := IngestPayload{
+			Timestamp: time.Now().Format(time.RFC3339),
+			Namespace: ns,
+			Pod:       pod,
+			Domain:    domain,
+			Type:      t,
+			Latency:   latency,
+			Rcode:     rcode,
+			Status:    status,
+		}
+
+		fmt.Printf("MOCK: DNS Response: %s | Latency: %dms | Status: %s\n", domain, latency, status)
+		go sendToBackend(backendURL, token, payload)
+	}
+}
+
 func main() {
+	mockFlag := flag.Bool("mock", false, "Run in mock mode (no pcap, generates fake traffic)")
+	backendURL := flag.String("backend", "http://localhost:3001", "Backend URL to push telemetry")
+	agentToken := flag.String("token", "", "Cluster Agent Token for authentication")
+	flag.Parse()
+
 	fmt.Println("Starting DNS Sidecar Monitor...")
 
-	// Start Prometheus metrics endpoint in a goroutine
+	// Start Prometheus metrics endpoint
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
 		log.Println("Prometheus metrics server listening on :2112")
@@ -53,41 +134,43 @@ func main() {
 		}
 	}()
 
-	// Open the shared network interface
+	if *mockFlag {
+		if *agentToken == "" {
+			log.Println("WARNING: No --token provided. Traffic will likely be rejected by backend.")
+		}
+		mockTrafficGenerator(*backendURL, *agentToken)
+		return
+	}
+
+	// Real PCAP Mode
 	handle, err := pcap.OpenLive("eth0", 1600, true, pcap.BlockForever)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Error opening device eth0: %v. Try running with sudo or use --mock", err)
 	}
 	defer handle.Close()
 
-	// Filter only DNS traffic (port 53)
 	err = handle.SetBPFFilter("udp and port 53")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Read packets
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 	for packet := range packetSource.Packets() {
-		// Check if it has a DNS layer
 		dnsLayer := packet.Layer(layers.LayerTypeDNS)
 		if dnsLayer != nil {
 			dns, _ := dnsLayer.(*layers.DNS)
 
 			if !dns.QR {
-				// 1. Capture DNS Query - Record starting timestamp
 				t := packet.Metadata().Timestamp
 				if t.IsZero() {
 					t = time.Now()
 				}
 				queryTimes[dns.ID] = t
 
-				// Prevent slow memory leaks from unmatched queries
 				if len(queryTimes) > 5000 {
 					queryTimes = make(map[uint16]time.Time)
 				}
 			} else {
-				// 2. Capture DNS Response - Match transaction ID and calculate latency
 				var latency time.Duration
 				hasLatency := false
 				if t, ok := queryTimes[dns.ID]; ok {
@@ -99,33 +182,49 @@ func main() {
 				for _, q := range dns.Questions {
 					domain := string(q.Name)
 
-					// Ignore local Kubernetes cluster lookup routing search path
 					if strings.Contains(domain, ".svc.cluster.local") || strings.Contains(domain, ".cluster.local") {
 						continue
 					}
 
-					// Format the metrics status and label details
 					status := "OK"
 					isError := false
+					rcode := dns.ResponseCode.String()
 					if dns.ResponseCode != layers.DNSResponseCodeNoErr {
-						status = strings.ToUpper(dns.ResponseCode.String())
-						isError = (dns.ResponseCode == layers.DNSResponseCodeNXDomain || dns.ResponseCode == layers.DNSResponseCodeServFail)
+						status = "ERROR"
+						isError = true
 					}
 
-					// Increment Prometheus counters
-					dnsQueriesTotal.WithLabelValues(domain, dns.ResponseCode.String()).Inc()
+					dnsQueriesTotal.WithLabelValues(domain, rcode).Inc()
 					if hasLatency {
 						dnsQueryDuration.WithLabelValues(domain, status).Observe(latency.Seconds())
 					}
 
-					// Format and log standard outputs with latency
 					latencyStr := "N/A"
+					latMs := 0
 					if hasLatency {
-						latencyStr = fmt.Sprintf("%dms", latency.Milliseconds())
+						latMs = int(latency.Milliseconds())
+						latencyStr = fmt.Sprintf("%dms", latMs)
+					}
+
+					qType := q.Type.String()
+
+					payload := IngestPayload{
+						Timestamp: time.Now().Format(time.RFC3339),
+						Namespace: "production", // Would be extracted from IP mapping in reality
+						Pod:       "unknown",    // Would be extracted from IP mapping in reality
+						Domain:    domain,
+						Type:      qType,
+						Latency:   latMs,
+						Rcode:     rcode,
+						Status:    status,
+					}
+
+					if *agentToken != "" {
+						go sendToBackend(*backendURL, *agentToken, payload)
 					}
 
 					if isError {
-						fmt.Printf("🚨 DNS FAILURE: %s | Status: %s | Latency: %s\n", domain, status, latencyStr)
+						fmt.Printf("🚨 DNS FAILURE: %s | Status: %s | Latency: %s\n", domain, rcode, latencyStr)
 					} else {
 						fmt.Printf("DNS Response: %s | Latency: %s | Status: %s\n", domain, latencyStr, status)
 					}
